@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name foxie_clock_nano)(type KiCad)(uri ${KIPRJMOD}/foxie_clock_nano.pretty)(options "")(descr ""))
+)
