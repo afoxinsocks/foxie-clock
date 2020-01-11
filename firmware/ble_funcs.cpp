@@ -1,4 +1,5 @@
 #include "ble_funcs.hpp"
+// NOTE: The vast majority of this file comes from the SparkFun Apollo3 SDK Example8_BLE_LED source. It has been lightly modified and cleaned up to fit better into the Foxie Clock source code.
 
 #include "Arduino.h"
 
@@ -47,37 +48,29 @@ void set_next_wakeup(void);
 void setAdvName(const char* str);
 extern "C" void set_adv_name( const char* str );
 
-void ble_setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
-  set_led_low();
-
-  //
-  // Configure the peripheral's advertised name:
-  set_adv_name(BLE_PERIPHERAL_NAME);
-
-  //
-  // Boot the radio.
-  //
-  HciDrvRadioBoot(0);
-
-  //
-  // Initialize the main ExactLE stack.
-  //
-  exactle_stack_init();
-
-  //
-  // Start the "Nus" profile.
-  //
-  NusStart();
+// ****************************************
+// 
+// C-callable led functions
+// 
+// ****************************************
+extern void set_led_high( void ){
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
-//*****************************************************************************
-//
-// Timer for buttons.
-//
-//*****************************************************************************
-wsfHandlerId_t ButtonHandlerId;
-wsfTimer_t ButtonTimer;
+extern void set_led_low( void ){
+  digitalWrite(LED_BUILTIN, LOW);
+}
+
+void ble_init() {
+  set_adv_name(BLE_PERIPHERAL_NAME);
+
+  HciDrvRadioBoot(0);
+
+  exactle_stack_init();
+
+  // NUS = "nordic uart service"
+  NusStart();
+}
 
 //*****************************************************************************
 //
@@ -111,20 +104,6 @@ static wsfBufPoolDesc_t g_psPoolDescriptors[WSF_BUF_POOLS] =
     { 280,  8 }
 };
 
-////*****************************************************************************
-////
-//// Enable printing to the console.
-////
-////*****************************************************************************
-//void
-//enable_print_interface(void)
-//{
-//    // //
-//    // // Initialize a debug printing interface.
-//    // //
-//    // am_bsp_itm_printf_enable();
-//    am_bsp_uart_printf_enable();
-//}
 
 //*****************************************************************************
 //
@@ -133,7 +112,6 @@ static wsfBufPoolDesc_t g_psPoolDescriptors[WSF_BUF_POOLS] =
 //*****************************************************************************
 uint32_t g_ui32LastTime = 0;
 extern "C" void radio_timer_handler(void);
-
 
 
 //*****************************************************************************
@@ -205,8 +183,6 @@ void exactle_stack_init(void){
     handlerId = WsfOsSetNextHandler(HciDrvHandler);
     HciDrvHandlerInit(handlerId);
 }
-
-
 
 //*****************************************************************************
 //
@@ -372,9 +348,6 @@ extern "C" void am_ble_isr(void){
     HciDrvIntService();
 }
 
-
-
-
 // ****************************************
 // 
 // Debug print functions
@@ -398,15 +371,3 @@ extern "C" void debug_printf(char* fmt, ...){
 #endif //DEBUG  
 }
 
-// ****************************************
-// 
-// C-callable led functions
-// 
-// ****************************************
-extern void set_led_high( void ){
-  digitalWrite(LED_BUILTIN, HIGH);
-}
-
-extern void set_led_low( void ){
-  digitalWrite(LED_BUILTIN, LOW);
-}

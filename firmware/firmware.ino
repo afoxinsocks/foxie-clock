@@ -131,19 +131,17 @@ void setup()
     leds.begin(); // initialize NeoPixel library
     leds.setBrightness(g_curBrightness); 
 
+    Serial.begin(115200);
+
     rtc_hal_init();
+    ble_init();
 
     updateClock(true);
-    updateLEDs();
 
     for (int i = 0; i < NUM_BTNS; ++i)
     {
         g_btns[i].Init();
     }
-
-    Serial.begin(115200);
-
-    ble_setup();
 }
 
 void loop()
@@ -210,11 +208,7 @@ void updateClock(bool force)
 
 void updateLEDs()
 {
-    // we have to disable all interrupts during the LED update because
-    // otherwise the timing gets corrupted when the BLE interrupts execute
-    am_hal_interrupt_master_disable();
     leds.show();
-    am_hal_interrupt_master_enable();
 }
 
 void updateDigitSeparators()
