@@ -4,9 +4,7 @@
 #include "rtc_hal.hpp"
 #include "digit.hpp"
 #include "button.hpp"
-#include "ble_funcs.h"
-
-#define BLE_PERIPHERAL_NAME "Foxie Clock"
+#include "ble_funcs.hpp"
 
 #define DIGIT_TYPE 2
 #define MIN_BRIGHTNESS 4
@@ -85,7 +83,6 @@ struct DigitSet
                 prev[i] = d[i];
             }
         }
-        //updateLEDs();
     }
 };
 
@@ -144,47 +141,15 @@ void setup()
         g_btns[i].Init();
     }
 
-    //Serial.begin(115200);
+    Serial.begin(115200);
 
-    BLE_setup();
-}
-
-void BLE_setup() {
-  #ifdef DEBUG
-    SERIAL_PORT.begin(115200);
-    delay(1000);
-    SERIAL_PORT.printf("Apollo3 Arduino BLE Example. Compiled: %s\n", __TIME__);
-  #endif
-
-  pinMode(LED_BUILTIN, OUTPUT);
-  set_led_low();
-
-  //
-  // Configure the peripheral's advertised name:
-  setAdvName(BLE_PERIPHERAL_NAME);
-
-  //
-  // Boot the radio.
-  //
-  HciDrvRadioBoot(0);
-
-  //
-  // Initialize the main ExactLE stack.
-  //
-  exactle_stack_init();
-
-  //
-  // Start the "Nus" profile.
-  //
-  NusStart();
+    ble_setup();
 }
 
 void loop()
 {
-    update_scheduler_timers();
-    wsfOsDispatcher();
-    set_next_wakeup();
-
+    ble_update_scheduler_timers();
+    
     rtc_hal_update();
 
     static int lastSecs = -1;
@@ -245,6 +210,8 @@ void updateClock(bool force)
 
 void updateLEDs()
 {
+    // we have to disable all interrupts during the LED update because
+    // otherwise the timing gets corrupted when the BLE interrupts execute
     am_hal_interrupt_master_disable();
     leds.show();
     am_hal_interrupt_master_enable();

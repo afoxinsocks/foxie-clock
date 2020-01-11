@@ -1,8 +1,74 @@
-#include "ble_funcs.h"
+#include "ble_funcs.hpp"
 
+#include "Arduino.h"
+
+#define DEBUG
+#define SERIAL_PORT Serial
+
+#include <stdint.h>
+#include <stdbool.h>
+
+extern "C" {
+    #include "wsf_types.h"
+    #include "wsf_trace.h"
+    #include "wsf_buf.h"
+
+    #include "hci_handler.h"
+    #include "dm_handler.h"
+    #include "l2c_handler.h"
+    #include "att_handler.h"
+    #include "smp_handler.h"
+    #include "l2c_api.h"
+    #include "att_api.h"
+    #include "smp_api.h"
+    #include "app_api.h"
+    #include "hci_core.h"
+    #include "hci_drv.h"
+    #include "hci_drv_apollo.h"
+    #include "hci_drv_apollo3.h"
+
+    #include "am_mcu_apollo.h"
+    #include "am_util.h"
+
+    #include "nus_api.h"
+    #include "app_ui.h"
+
+    #include "wsf_msg.h"
+}
+
+//*****************************************************************************
+//
+// Forward declarations.
+//
+//*****************************************************************************
+void exactle_stack_init(void);
+void scheduler_timer_init(void);
+void set_next_wakeup(void);
+void setAdvName(const char* str);
 extern "C" void set_adv_name( const char* str );
-void setAdvName(const char* str){
-    set_adv_name( str );
+
+void ble_setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  set_led_low();
+
+  //
+  // Configure the peripheral's advertised name:
+  set_adv_name(BLE_PERIPHERAL_NAME);
+
+  //
+  // Boot the radio.
+  //
+  HciDrvRadioBoot(0);
+
+  //
+  // Initialize the main ExactLE stack.
+  //
+  exactle_stack_init();
+
+  //
+  // Start the "Nus" profile.
+  //
+  NusStart();
 }
 
 //*****************************************************************************
@@ -136,8 +202,6 @@ void exactle_stack_init(void){
     handlerId = WsfOsSetNextHandler(NusHandler);
     NusHandlerInit(handlerId);
 
-//    ButtonHandlerId = WsfOsSetNextHandler(button_handler);
-
     handlerId = WsfOsSetNextHandler(HciDrvHandler);
     HciDrvHandlerInit(handlerId);
 }
@@ -189,7 +253,7 @@ scheduler_timer_init(void)
 //
 //*****************************************************************************
 void
-update_scheduler_timers(void)
+ble_update_scheduler_timers(void)
 {
     uint32_t ui32CurrentTime, ui32ElapsedTime;
 
@@ -220,6 +284,9 @@ update_scheduler_timers(void)
 
         g_ui32LastTime = ui32CurrentTime;
     }
+
+    wsfOsDispatcher();
+    set_next_wakeup();
 }
 
 //*****************************************************************************
@@ -275,60 +342,6 @@ extern "C" void radio_timer_handler(void){
 
     WsfTaskSetReady(0, 0);
 }
-
-////*****************************************************************************
-////
-//// Poll the buttons.
-////
-////*****************************************************************************
-//void
-//button_handler(wsfEventMask_t event, wsfMsgHdr_t *pMsg)
-//{
-//    //
-//    // Restart the button timer.
-//    //
-//    WsfTimerStartMs(&ButtonTimer, 10);
-//
-//    //
-//    // Every time we get a button timer tick, check all of our buttons.
-//    //
-//    am_devices_button_array_tick(am_bsp_psButtons, AM_BSP_NUM_BUTTONS);
-//
-//    //
-//    // If we got a a press, do something with it.
-//    //
-//    if ( am_devices_button_released(am_bsp_psButtons[0]) )
-//    {
-//        am_util_debug_printf("Got Button 0 Press\n");
-//        AppUiBtnTest(APP_UI_BTN_1_SHORT);
-//    }
-//
-//    if ( am_devices_button_released(am_bsp_psButtons[1]) )
-//    {
-//        am_util_debug_printf("Got Button 1 Press\n");
-//        AppUiBtnTest(APP_UI_BTN_1_SHORT);
-//    }
-//}
-//
-////*****************************************************************************
-////
-//// Sets up a button interface.
-////
-////*****************************************************************************
-//void
-//setup_buttons(void)
-//{
-//    //
-//    // Enable the buttons for user interaction.
-//    //
-//    am_devices_button_array_init(am_bsp_psButtons, AM_BSP_NUM_BUTTONS);
-//
-//    //
-//    // Start a timer.
-//    //
-//    ButtonTimer.handlerId = ButtonHandlerId;
-//    WsfTimerStartSec(&ButtonTimer, 2);
-//}
 
 //*****************************************************************************
 //
