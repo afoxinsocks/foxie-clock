@@ -1,9 +1,12 @@
-#include "Adafruit_NeoPixel.h"
 #include <vector>
-#include <RTC.h>
 
+#include "Adafruit_NeoPixel.h"
+#include "rtc_hal.hpp"
 #include "digit.hpp"
 #include "button.hpp"
+#include "ble_funcs.h"
+
+#define BLE_PERIPHERAL_NAME "Foxie Clock"
 
 #define DIGIT_TYPE 2
 #define MIN_BRIGHTNESS 4
@@ -13,28 +16,6 @@
 #define BLINK 1
 #define CYCLE_COLORS 1
 #define INITIAL_WHEEL_COLOR 192
-
-APM3_RTC g_rtc;
-int hour()
-{
-    return g_rtc.hour;
-}
-
-int hourFormat12()
-{
-    const int hour = g_rtc.hour == 0 ? 12 : g_rtc.hour;
-    return hour > 12 ? hour - 12 : hour;
-}
-
-int minute()
-{
-    return g_rtc.minute;
-}
-
-int second()
-{
-    return g_rtc.seconds;
-}
 
 void updateClock(bool force = false);
 void updateDigitSeparators();
@@ -104,7 +85,7 @@ struct DigitSet
                 prev[i] = d[i];
             }
         }
-        leds.show();
+        //updateLEDs();
     }
 };
 
@@ -117,8 +98,8 @@ struct Clock : public DigitSet
         
         if (!is24)
         {
-            d[0] = hourFormat12() / 10;
-            d[1] = hourFormat12() % 10;
+            d[0] = rtc_hal_hourFormat12() / 10;
+            d[1] = rtc_hal_hourFormat12() % 10;
             if (d[0] == 0)
             {
                 d[0] = 0xFF; // disable display
@@ -126,13 +107,13 @@ struct Clock : public DigitSet
         }
         else
         {
-            d[0] = hour() / 10;
-            d[1] = hour() % 10;
+            d[0] = rtc_hal_hour() / 10;
+            d[1] = rtc_hal_hour() % 10;
         }
-        d[2] = minute() / 10;
-        d[3] = minute() % 10;
-        d[4] = second() / 10;
-        d[5] = second() % 10;
+        d[2] = rtc_hal_minute() / 10;
+        d[3] = rtc_hal_minute() % 10;
+        d[4] = rtc_hal_second() / 10;
+        d[5] = rtc_hal_second() % 10;
 
     }
 
@@ -153,10 +134,10 @@ void setup()
     leds.begin(); // initialize NeoPixel library
     leds.setBrightness(g_curBrightness); 
 
-    g_rtc.setToCompilerTime();
-    g_rtc.getTime();
+    rtc_hal_init();
+
     updateClock(true);
-    leds.show();
+    updateLEDs();
 
     for (int i = 0; i < NUM_BTNS; ++i)
     {
@@ -164,20 +145,57 @@ void setup()
     }
 
     //Serial.begin(115200);
+
+    BLE_setup();
+}
+
+void BLE_setup() {
+  #ifdef DEBUG
+    SERIAL_PORT.begin(115200);
+    delay(1000);
+    SERIAL_PORT.printf("Apollo3 Arduino BLE Example. Compiled: %s\n", __TIME__);
+  #endif
+
+  pinMode(LED_BUILTIN, OUTPUT);
+  set_led_low();
+
+  //
+  // Configure the peripheral's advertised name:
+  setAdvName(BLE_PERIPHERAL_NAME);
+
+  //
+  // Boot the radio.
+  //
+  HciDrvRadioBoot(0);
+
+  //
+  // Initialize the main ExactLE stack.
+  //
+  exactle_stack_init();
+
+  //
+  // Start the "Nus" profile.
+  //
+  NusStart();
 }
 
 void loop()
 {
-    g_rtc.getTime();
+    update_scheduler_timers();
+    wsfOsDispatcher();
+    set_next_wakeup();
+
+    rtc_hal_update();
+
     static int lastSecs = -1;
 
     // if (Serial.available()) {
     //     // TODO: Add handling for commands coming in over the serial connection
     // }
 
-    if (lastSecs != second())
+    if (lastSecs != rtc_hal_second())
     {
-        lastSecs = second();
+        lastSecs = rtc_hal_second();
         updateClock();
     }
     for (int i = 0; i < NUM_BTNS; ++i)
@@ -187,17 +205,13 @@ void loop()
 
     if (g_btns[0].WasPressed())
     {
-        g_rtc.hour = ++g_rtc.hour == 24 ? 0 : g_rtc.hour;
-        g_rtc.setTime(g_rtc.hour, g_rtc.minute, g_rtc.seconds, 0, g_rtc.dayOfMonth, g_rtc.month, g_rtc.year);
-        g_rtc.getTime();
+        rtc_hal_setTime(rtc_hal_hour() + 1, rtc_hal_minute(), rtc_hal_second());
         updateClock(true);
     }
 
     else if (g_btns[1].WasPressed())
     {
-        g_rtc.minute = ++g_rtc.minute == 60 ? 0 : g_rtc.minute;
-        g_rtc.setTime(g_rtc.hour, g_rtc.minute, g_rtc.seconds, 0, g_rtc.dayOfMonth, g_rtc.month, g_rtc.year);
-        g_rtc.getTime();
+        rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
         updateClock(true);
     }
 
@@ -215,7 +229,7 @@ void loop()
             g_curBrightness = MIN_BRIGHTNESS;
         }
         leds.setBrightness(g_curBrightness);
-        leds.show();
+        updateLEDs();
     }
 }
 
@@ -226,12 +240,20 @@ void updateClock(bool force)
 #if BLINK == 1
     updateDigitSeparators();
 #endif
+    updateLEDs();
+}
+
+void updateLEDs()
+{
+    am_hal_interrupt_master_disable();
+    leds.show();
+    am_hal_interrupt_master_enable();
 }
 
 void updateDigitSeparators()
 {
     int blinkColor = colorWheel(g_wheelColor);
-    if (second() % 2 != 0)
+    if (rtc_hal_second() % 2 != 0)
     {
         blinkColor = 0;
     }
@@ -242,8 +264,6 @@ void updateDigitSeparators()
     leds.setPixelColor(BLINK_1_LED + 8, blinkColor);
     leds.setPixelColor(BLINK_2_LED + 8, blinkColor);
 #endif
-
-    leds.show();
 }
 
 // returns a color transitioning from r -> g -> b and back to r
