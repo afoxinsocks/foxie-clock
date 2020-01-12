@@ -6,9 +6,9 @@
 #include "button.hpp"
 #include "ble_funcs.hpp"
 
-#define DIGIT_TYPE 2
+#define DIGIT_TYPE 1 // 1 is edge lit (with acrylics), 2 is pixel display
 #define MIN_BRIGHTNESS 4
-#define MAX_BRIGHTNESS 128 // 255 max
+#define MAX_BRIGHTNESS 192 // 255 max
 #define BRIGHTNESS_STEP (MAX_BRIGHTNESS / 8)
 
 #define BLINK 1
