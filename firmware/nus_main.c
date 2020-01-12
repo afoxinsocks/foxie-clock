@@ -50,8 +50,7 @@
 
 extern void debug_print(const char* f, const char* F, uint16_t L);
 extern void debug_printf(char* fmt, ...);
-extern void set_led_high( void );
-extern void set_led_low( void );
+extern void alert(uint8_t val);
 
 /**************************************************************************************************
   Macros
@@ -297,40 +296,6 @@ static const attsCccSet_t tagCccSet[TAG_NUM_CCC_IDX] =
   {GATT_SC_CH_CCC_HDL,   ATT_CLIENT_CFG_INDICATE,    DM_SEC_LEVEL_ENC}    /* TAG_GATT_SC_CCC_IDX */
 };
 
-/*************************************************************************************************/
-/*!
- *  \fn     tagAlert
- *
- *  \brief  Perform an alert based on the alert characteristic value
- *
- *  \param  alert  alert characteristic value
- *
- *  \return None.
- */
-/*************************************************************************************************/
-static void tagAlert(uint8_t alert)
-{
-  #ifdef DEBUG
-    debug_print(__func__, __FILE__, __LINE__);
-    debug_printf("alert: 0x%02X\n", alert);
-  #endif
-  /* perform alert according to setting of alert alert */
-  if (alert == CH_ALERT_LVL_NONE)
-  {
-    set_led_low();
-    AppUiAction(APP_UI_ALERT_CANCEL);
-  }
-  else if (alert == CH_ALERT_LVL_MILD)
-  {
-    set_led_high();
-    AppUiAction(APP_UI_ALERT_LOW);
-  }
-  else if (alert == CH_ALERT_LVL_HIGH)
-  {
-    set_led_high();
-    AppUiAction(APP_UI_ALERT_HIGH);
-  }
-}
 
 static void tagSetup(dmEvt_t *pMsg);
 
@@ -449,11 +414,11 @@ static uint8_t tagIasWriteCback(dmConnId_t connId, uint16_t handle, uint8_t oper
   #ifdef DEBUG
     debug_print(__func__, __FILE__, __LINE__);
   #endif
-  ATT_TRACE_INFO3("tagIasWriteCback connId:%d handle:0x%04x op:0x%02x",
+  debug_printf("tagIasWriteCback connId:%d handle:0x%04x op:0x%02x",
                   connId, handle, operation);
-  ATT_TRACE_INFO2("                 offset:0x%04x len:0x%04x", offset, len);
+  debug_printf("                 offset:0x%04x len:0x%04x", offset, len);
 
-  tagAlert(*pValue);
+  alert(*pValue);
 
   return ATT_SUCCESS;
 }
@@ -501,10 +466,7 @@ static void tagClose(dmEvt_t *pMsg)
   /* perform alert according to setting of link loss alert */
   if (AttsGetAttr(LLS_AL_HDL, &len, &pVal) == ATT_SUCCESS)
   {
-    if (*pVal == CH_ALERT_LVL_MILD || *pVal == CH_ALERT_LVL_HIGH)
-    {
-      tagAlert(*pVal);
-    }
+    // don't do anything on link loss
   }
 
   /* if read RSSI in progress, stop timer */
@@ -670,157 +632,6 @@ static void tagProcRssiTimer(dmEvt_t *pMsg)
 
     /* restart timer */
     WsfTimerStartSec(&tagCb.rssiTimer, TAG_READ_RSSI_INTERVAL);
-  }
-}
-
-/*************************************************************************************************/
-/*!
- *  \fn     tagBtnCback
- *
- *  \brief  Button press callback.
- *
- *  \param  btn    Button press.
- *
- *  \return None.
- */
-/*************************************************************************************************/
-static void tagBtnCback(uint8_t btn)
-{
-  #ifdef DEBUG
-    debug_print(__func__, __FILE__, __LINE__);
-  #endif
-  dmConnId_t  connId;
-
-  /* button actions when connected */
-  if ((connId = AppConnIsOpen()) != DM_CONN_ID_NONE)
-  {
-    switch (btn)
-    {
-      case APP_UI_BTN_1_SHORT:
-        /* send immediate alert, high */
-        FmplSendAlert(connId, pTagIasHdlList[FMPL_IAS_AL_HDL_IDX], CH_ALERT_LVL_HIGH);
-        break;
-
-      case APP_UI_BTN_1_MED:
-        /* send immediate alert, none */
-        FmplSendAlert(connId, pTagIasHdlList[FMPL_IAS_AL_HDL_IDX], CH_ALERT_LVL_NONE);
-        break;
-
-      case APP_UI_BTN_1_LONG:
-        /* disconnect */
-        AppConnClose(connId);
-        break;
-
-      case APP_UI_BTN_2_SHORT:
-        /* if read RSSI in progress, stop timer */
-        if (tagCb.inProgress)
-        {
-          tagCb.inProgress = FALSE;
-
-          /* stop timer */
-          WsfTimerStop(&tagCb.rssiTimer);
-        }
-        else
-        {
-          tagCb.inProgress = TRUE;
-
-          /* read RSSI value for the active connection */
-          DmConnReadRssi(connId);
-
-          /* start timer */
-          WsfTimerStartSec(&tagCb.rssiTimer, TAG_READ_RSSI_INTERVAL);
-        }
-        break;
-
-      case APP_UI_BTN_2_MED:
-        {
-          uint8_t addrType = DmConnPeerAddrType(connId);
-
-          /* if peer is using a public address */
-          if (addrType == DM_ADDR_PUBLIC)
-          {
-            /* add peer to the white list */
-            DmDevWhiteListAdd(addrType, DmConnPeerAddr(connId));
-
-            /* set Advertising filter policy to All */
-            DmDevSetFilterPolicy(DM_FILT_POLICY_MODE_ADV, HCI_ADV_FILT_ALL);
-          }
-        }
-        break;
-
-      default:
-        break;
-    }
-  }
-  /* button actions when not connected */
-  else
-  {
-    switch (btn)
-    {
-      case APP_UI_BTN_1_SHORT:
-        /* start or restart advertising */
-        AppAdvStart(APP_MODE_AUTO_INIT);
-        break;
-
-      case APP_UI_BTN_1_MED:
-        /* enter discoverable and bondable mode mode */
-        AppSetBondable(TRUE);
-        AppAdvStart(APP_MODE_DISCOVERABLE);
-        break;
-
-      case APP_UI_BTN_1_LONG:
-        /* clear bonded device info */
-        AppDbDeleteAllRecords();
-
-        /* if LL Privacy is supported */
-        if (HciLlPrivacySupported())
-        {
-          /* if LL Privacy has been enabled */
-          if (DmLlPrivEnabled())
-          {
-            /* make sure LL Privacy is disabled before restarting advertising */
-            DmPrivSetAddrResEnable(FALSE);
-          }
-
-          /* clear resolving list */
-          DmPrivClearResList();
-        }
-
-        /* restart advertising */
-        AppAdvStart(APP_MODE_AUTO_INIT);
-        break;
-
-      case APP_UI_BTN_1_EX_LONG:
-        /* add RPAO characteristic to GAP service -- needed only when DM Privacy enabled */
-        SvcCoreGapAddRpaoCh();
-        break;
-
-      case APP_UI_BTN_2_MED:
-        /* clear the white list */
-        DmDevWhiteListClear();
-
-        /* set Advertising filter policy to None */
-        DmDevSetFilterPolicy(DM_FILT_POLICY_MODE_ADV, HCI_ADV_FILT_NONE);
-        break;
-
-      case APP_UI_BTN_2_SHORT:
-        /* stop advertising */
-        AppAdvStop();
-        break;
-
-      case APP_UI_BTN_2_LONG:
-        /* start directed advertising using peer address */
-        AppConnAccept(DM_ADV_CONN_DIRECT_LO_DUTY, tagCb.addrType, tagCb.peerAddr);
-        break;
-
-      case APP_UI_BTN_2_EX_LONG:
-        /* enable device privacy -- start generating local RPAs every 15 minutes */
-        DmAdvPrivStart(15 * 60);
-        break;
-
-      default:
-        break;
-    }
   }
 }
 
@@ -1166,9 +977,6 @@ void NusStart(void)
   AttRegister(tagAttCback);
   AttConnRegister(AppServerConnCback);
   AttsCccRegister(TAG_NUM_CCC_IDX, (attsCccSet_t *) tagCccSet, tagCccCback);
-
-  /* Register for app framework button callbacks */
-  AppUiBtnRegister(tagBtnCback);
 
   /* Register for app framework discovery callbacks */
   AppDiscRegister(tagDiscCback);

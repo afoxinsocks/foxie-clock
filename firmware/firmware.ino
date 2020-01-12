@@ -131,31 +131,28 @@ void setup()
     leds.begin(); // initialize NeoPixel library
     leds.setBrightness(g_curBrightness); 
 
-    Serial.begin(115200);
-
-    rtc_hal_init();
-    ble_init();
-
+    rtc_hal_init();    
     updateClock(true);
 
     for (int i = 0; i < NUM_BTNS; ++i)
     {
         g_btns[i].Init();
     }
+
+    Serial.begin(115200);
+    ble_init();
 }
 
 void loop()
 {
     ble_update_scheduler_timers();
-    
-    rtc_hal_update();
-
-    static int lastSecs = -1;
 
     // if (Serial.available()) {
     //     // TODO: Add handling for commands coming in over the serial connection
     // }
 
+    rtc_hal_update();
+    static int lastSecs = -1;
     if (lastSecs != rtc_hal_second())
     {
         lastSecs = rtc_hal_second();
