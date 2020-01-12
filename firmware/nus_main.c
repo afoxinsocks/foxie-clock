@@ -414,9 +414,6 @@ static uint8_t tagIasWriteCback(dmConnId_t connId, uint16_t handle, uint8_t oper
   #ifdef DEBUG
     debug_print(__func__, __FILE__, __LINE__);
   #endif
-  debug_printf("tagIasWriteCback connId:%d handle:0x%04x op:0x%02x",
-                  connId, handle, operation);
-  debug_printf("                 offset:0x%04x len:0x%04x", offset, len);
 
   alert(*pValue);
 

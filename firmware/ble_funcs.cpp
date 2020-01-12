@@ -122,12 +122,12 @@ void handleSetTimeState(uint8_t val)
         rtc_hal_setTime(h, m, val + 1);
         state = CS_HOUR;
         g_alertState = STATE_WAIT;
+        updateClock(true);
         break;
 
     default:
         break;
     }
-    updateClock(true);
 }
 
 void ble_init() {
