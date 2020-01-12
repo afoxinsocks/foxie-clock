@@ -22,7 +22,7 @@
  *  to any use, copying or further distribution of this software.
  */
 /*************************************************************************************************/
-#define DEBUG
+//#define DEBUG
 
 
 #include <string.h>

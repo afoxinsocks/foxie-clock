@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "rtc_hal.hpp"
 
-#define DEBUG
+//#define DEBUG
 #define SERIAL_PORT Serial
 #define BLE_PERIPHERAL_NAME "Foxie Clock"
 
