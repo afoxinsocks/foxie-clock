@@ -128,6 +128,7 @@ Button g_btns[NUM_BTNS] = {PIN_BTN_HOUR, PIN_BTN_MIN, PIN_BTN_COLOR, PIN_BTN_BRI
 
 void setup()
 {
+    Serial.begin(115200);
     leds.begin(); // initialize NeoPixel library
     leds.setBrightness(g_curBrightness); 
 
@@ -139,7 +140,6 @@ void setup()
         g_btns[i].Init();
     }
 
-    Serial.begin(115200);
     ble_init();
 }
 

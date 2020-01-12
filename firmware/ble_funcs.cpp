@@ -131,6 +131,9 @@ void handleSetTimeState(uint8_t val)
 }
 
 void ble_init() {
+  // wait a bit for the BT hardware to be ready
+  delay(400);
+
   set_adv_name(BLE_PERIPHERAL_NAME);
 
   HciDrvRadioBoot(0);
@@ -425,7 +428,9 @@ extern "C" void am_ble_isr(void){
 #define DEBUG_UART_BUF_LEN 256
 
 extern "C" void debug_print(const char* f, const char* F, uint16_t L){
-  SERIAL_PORT.printf("fm: %s, file: %s, line: %d\n", f, F, L);
+#ifdef DEBUG
+    SERIAL_PORT.printf("fm: %s, file: %s, line: %d\n", f, F, L);
+#endif
 }
 
 extern "C" void debug_printf(char* fmt, ...){
