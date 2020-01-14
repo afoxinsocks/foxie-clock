@@ -4,7 +4,7 @@
 APM3_RTC g_rtc;
 void rtc_hal_init()
 {
-	g_rtc.setToCompilerTime();
+	g_rtc.setTime(0, 0, 0, 0, 1, 1, 20);
 	rtc_hal_update();
 }
 
