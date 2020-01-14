@@ -96,7 +96,7 @@ void Adafruit_NeoPixel::apollo3Show(
     // NOTE - These timings may need to be tweaked
     for(;;) {
       am_hal_gpio_fastgpio_set(pad);
-      asm("nop; nop;");
+      asm("nop;");
       if(p & bitMask) {
         asm("nop; nop; nop; nop; nop; nop; nop; nop;"
             "nop; nop; nop; nop; nop; nop; nop; nop;"
@@ -113,7 +113,7 @@ void Adafruit_NeoPixel::apollo3Show(
       asm("nop; nop; nop; nop; nop; nop; nop; nop;"
           "nop; nop; nop; nop; nop; nop; nop; nop;"
           "nop; nop; nop; nop; nop; nop; nop; nop;"
-          "nop; nop; nop; nop; nop; nop; nop; nop;");
+          "nop; nop; nop; nop; nop; nop; nop; nop; nop; nop; nop; nop; nop;");
       if(bitMask >>= 1) {
         asm("nop; nop; nop; nop; nop; nop; nop;");
       } else {
