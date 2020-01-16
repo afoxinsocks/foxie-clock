@@ -1,7 +1,26 @@
 #pragma once
 #include "Adafruit_NeoPixel.h"
 
-class DigitBase
+// returns a color transitioning from r -> g -> b and back to r
+// lightly modified from Adafruit NeoPixel strand test
+uint32_t ColorWheel(uint8_t pos) {
+    pos = 255 - pos;
+    if (pos < 85) 
+    {
+       return Adafruit_NeoPixel::Color(255 - pos * 3, 0, pos * 3);
+    }
+    
+    if (pos < 170) 
+    {
+        pos -= 85;
+        return Adafruit_NeoPixel::Color(0, pos * 3, 255 - pos * 3);
+    }
+    
+    pos -= 170;
+    return Adafruit_NeoPixel::Color(pos * 3, 255 - pos * 3, 0);
+}
+
+class Digit
 {
 protected:
     enum
@@ -15,7 +34,7 @@ protected:
     int color;
 
 public:
-    DigitBase(Adafruit_NeoPixel &strip, const int firstLED, const int onColor)
+    Digit(Adafruit_NeoPixel &strip, const int firstLED, const int onColor)
     : leds(strip), first(firstLED), color(onColor)
     {
     }
@@ -37,10 +56,10 @@ public:
 };
 
 // lights two LEDs at a time under each numeral
-class EdgeLitDigit : public DigitBase
+class EdgeLitDigit : public Digit
 {
 private:
-    using DigitBase::DigitBase;
+    using Digit::Digit;
 
 public:
     virtual void Draw(const int num)
@@ -56,10 +75,10 @@ public:
 };
 
 // draws an entire number on the display using the available LEDs
-class DisplayDigit : public DigitBase
+class DisplayDigit : public Digit
 {
 private:
-    using DigitBase::DigitBase;
+    using Digit::Digit;
 
 public:
     virtual void Draw(const int num)

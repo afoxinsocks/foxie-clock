@@ -99,7 +99,7 @@ extern "C" void alert(uint8_t val)
     // TODO: Implement a timeout for this
 }
 
-extern void updateClock(bool force = false);
+extern void UpdateClock(bool force = false);
 void handleSetTimeState(uint8_t val)
 {
     static ClockSetState_e state = CS_HOUR;
@@ -122,7 +122,7 @@ void handleSetTimeState(uint8_t val)
         rtc_hal_setTime(h, m, val + 1);
         state = CS_HOUR;
         g_alertState = STATE_WAIT;
-        updateClock(true);
+        UpdateClock(true);
         break;
 
     default:
@@ -130,7 +130,7 @@ void handleSetTimeState(uint8_t val)
     }
 }
 
-void ble_init() {
+void BLEInit() {
   // wait a bit for the BT hardware to be ready
   delay(400);
 
@@ -301,7 +301,7 @@ scheduler_timer_init(void)
 //
 //*****************************************************************************
 void
-ble_update_scheduler_timers(void)
+BLEScheduledProcessing(void)
 {
     uint32_t ui32CurrentTime, ui32ElapsedTime;
 

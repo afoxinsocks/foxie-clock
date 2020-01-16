@@ -20,6 +20,12 @@ enum SettingNames_e
     TOTAL_SETTINGS,
 };
 
+enum AnimationType_e
+{
+    ANIM_NONE = 0,
+    ANIM_CYCLE_COLORS = 1,
+};
+
 // The purpose of this class is to store user configurable settings 
 // into EEPROM (including emulated EEPROM stored in flash), only storing
 // when all values have been updated to save write cycles when possible.

@@ -21,11 +21,6 @@ public:
         pinMode(m_pin, INPUT_PULLUP);
     }
 
-    void Init()
-    {
-
-    }
-
     void Check()
     {
         bool pressed = digitalRead(m_pin) == 0;
