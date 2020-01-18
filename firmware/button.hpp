@@ -1,12 +1,21 @@
- #pragma once
+#pragma once
+#include <functional>
 
 class Button
 {
 private:
+    using Func_t = std::function<void()>;
     const uint8_t m_pin;
-    int m_start{0};
-    bool m_held{false};
-    bool m_released{false};
+
+    bool m_newState{false};
+    bool m_changingState{false};
+    int m_millisAtStateChange{0};
+
+    bool m_pressed{false};
+    int m_millisAtPress{0};
+
+    Func_t m_pressFunc;
+    Func_t m_releaseFunc;
     
 public:
     enum
@@ -21,47 +30,58 @@ public:
         pinMode(m_pin, INPUT_PULLUP);
     }
 
-    void Check()
+    void SetPressFunc(Func_t &&func)
     {
-        bool pressed = digitalRead(m_pin) == 0;
-        if (pressed)
-        {
-            if (m_start == 0)
-            {
-                m_start = millis();
-            }
-        }
-        else
-        {
-            m_start = 0;
-            if (m_held)
-            {
-                m_held = false;
-                m_released = true;
-            }
-        }
-
-        if (pressed && millis() - m_start > DEBOUNCE_MS)
-        {
-            m_held = true;
-        }
+        m_pressFunc = func;
     }
 
-    bool WasPressed()
+    void SetReleaseFunc(Func_t &&func)
     {
-        const int duration = millis() - m_start;
-        bool released = m_released;
-        m_released = false;
+        m_releaseFunc = func;
+    }
 
-        if (m_held && duration >= REPEAT_MS)
+    void Check()
+    {
+        const bool pressed = digitalRead(m_pin) == 0;
+
+        if (m_changingState == false && pressed != m_pressed)
         {
-            released = true; // simulate button press release
+            m_millisAtStateChange = millis();
+            m_newState = pressed;
+            m_changingState = true;
+        }
+        else if (m_changingState)
+        {
+            if ((int)millis() - m_millisAtStateChange > DEBOUNCE_MS)
+            {
+                if (pressed == m_newState)
+                {
+                    // state change occurred, do something
+                    m_pressed = m_newState;
+
+                    if (m_pressed && m_pressFunc)
+                    {
+                        m_millisAtPress = millis();
+                        m_pressFunc();
+                    }
+                    else if (!m_pressed && m_releaseFunc)
+                    {
+                        m_releaseFunc();
+                    }
+
+                }
+                m_changingState = false;
+            }
         }
 
-        if (released)
+        // handle repeat
+        if (m_pressed && (int)millis() - m_millisAtPress > REPEAT_MS)
         {
-            m_start = millis();
+            m_millisAtPress = millis();
+            if (m_pressFunc)
+            {
+                m_pressFunc();
+            }
         }
-        return released;
     }
 };
