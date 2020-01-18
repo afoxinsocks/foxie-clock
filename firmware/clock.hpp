@@ -92,7 +92,8 @@ public:
         {
             rtc_hal_update();
         }
-        else
+        
+        if (m_state != STATE_NORMAL || (m_animator && m_animator->IsFast()))
         {
             force = true;
         }

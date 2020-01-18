@@ -3,7 +3,7 @@
 
 // returns a color transitioning from r -> g -> b and back to r
 // lightly modified from Adafruit NeoPixel strand test
-uint32_t ColorWheel(uint8_t pos) {
+static inline uint32_t ColorWheel(uint8_t pos) {
     pos = 255 - pos;
     if (pos < 85) 
     {
@@ -18,6 +18,14 @@ uint32_t ColorWheel(uint8_t pos) {
     
     pos -= 170;
     return Adafruit_NeoPixel::Color(pos * 3, 255 - pos * 3, 0);
+}
+
+static inline int ScaleBrightness(const int color, const float brightness)
+{
+    const float r = ((color & 0xFF0000) >> 16) * brightness;
+    const float g = ((color & 0x00FF00) >> 8) * brightness;
+    const float b = (color & 0x0000FF) * brightness;
+    return Adafruit_NeoPixel::Color(r, g, b);
 }
 
 class Digit

@@ -2,6 +2,13 @@
 #include "digit_manager.hpp"
 #include "settings.hpp"
 
+enum AnimationType_e
+{
+    ANIM_NONE = 0,
+    ANIM_CYCLE_COLORS,
+    ANIM_GLOW,
+};
+
 class Animator
 {
 protected:
@@ -15,11 +22,17 @@ public:
 
     virtual void Go() 
     {
+        // does nothing except update the digit colors to the current setting
         for (int i = 0; i < 6; ++i)
         {
             m_digitMgr.SetDigitColor(i, ColorWheel(Settings::Get(SETTING_COLOR)));
         }
     };
+
+    virtual bool IsFast() 
+    {
+        return false;
+    }
 };
 
 class AnimatorCycleAll : public Animator
@@ -39,11 +52,53 @@ public:
     }
 };
 
+class AnimatorGlow : public Animator
+{
+    using Animator::Animator; 
+private:
+    float m_brightness{1.0f};
+    float m_incrementer{0.1f};
+    int m_millis{0};
+
+public:
+    virtual void Go() override
+    {
+        int scaledColor = ScaleBrightness(ColorWheel(Settings::Get(SETTING_COLOR)), m_brightness);
+        for (int i = 0; i < 6; ++i)
+        {
+            m_digitMgr.SetDigitColor(i, scaledColor);
+        }
+
+        if ((int) millis() - m_millis >= 25)
+        {
+            m_millis = millis();
+
+            m_brightness += m_incrementer;
+            if (m_brightness > 1.0f)
+            {
+                m_incrementer = -0.025f;
+                m_brightness = 1.0f;
+            }
+            else if (m_brightness < 0.2f)
+            {
+                m_incrementer = 0.025f;
+                m_brightness = 0.2f;
+            }
+        }
+    }
+
+    virtual bool IsFast()
+    {
+        return true;
+    }
+};
+
 static inline Animator *AnimatorFactory(DigitManager &digitMgr, const AnimationType_e type)
 {
     switch (type)
     {
         case ANIM_CYCLE_COLORS: return new AnimatorCycleAll(digitMgr);
+        case ANIM_GLOW: return new AnimatorGlow(digitMgr);
     }
     
     return new Animator(digitMgr);
