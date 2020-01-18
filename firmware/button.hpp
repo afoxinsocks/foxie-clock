@@ -1,87 +1,142 @@
 #pragma once
 #include <functional>
 
+// Debouncing button class with press, repeat, release events that
+// are sent to callback handler 
 class Button
 {
+public:
+    enum Event_e
+    {
+        PRESS,
+        REPEAT,
+        RELEASE,
+    };
+
 private:
-    using Func_t = std::function<void()>;
+    enum
+    {
+        DEBOUNCE_MS = 50,
+        DEFAULT_REPEAT_RATE_MS = 200,
+    };
+
+    using Func_t = std::function<void(const Event_e evt)>;
     const uint8_t m_pin;
 
-    bool m_newState{false};
-    bool m_changingState{false};
-    int m_millisAtStateChange{0};
+    bool m_currentButtonState{false};
+    bool m_futureButtonState{false};
+    bool m_checkingDebounce{false};
+    int m_millisSinceDebounceStarted{0};
 
     bool m_pressed{false};
     int m_millisAtPress{0};
+    int m_millisSinceRepeat{0};
 
-    Func_t m_pressFunc;
-    Func_t m_releaseFunc;
+    int m_repeatRateMs{DEFAULT_REPEAT_RATE_MS};
+
+    Func_t m_func;
     
 public:
-    enum
-    {
-        DEBOUNCE_MS = 10,
-        REPEAT_MS = 200,
-    };
-
     Button(const uint8_t pin)
     : m_pin(pin)
+    , m_func([](const Event_e evt){
+        // empty function that does nothing by default
+    }) 
     {
         pinMode(m_pin, INPUT_PULLUP);
     }
 
-    void SetPressFunc(Func_t &&func)
+    void SetHandlerFunc(Func_t &&func)
     {
-        m_pressFunc = func;
+        m_func = func;
     }
 
-    void SetReleaseFunc(Func_t &&func)
+    void SetRepeatRate(const int repeatRateMs)
     {
-        m_releaseFunc = func;
+        m_repeatRateMs = repeatRateMs;
     }
 
     void Check()
     {
-        const bool pressed = digitalRead(m_pin) == 0;
+        m_currentButtonState = (digitalRead(m_pin) == 0);
 
-        if (m_changingState == false && pressed != m_pressed)
+        if (!m_checkingDebounce && m_currentButtonState != m_pressed)
         {
-            m_millisAtStateChange = millis();
-            m_newState = pressed;
-            m_changingState = true;
+            BeginDebouncing();
         }
-        else if (m_changingState)
+        else if (m_checkingDebounce)
         {
-            if ((int)millis() - m_millisAtStateChange > DEBOUNCE_MS)
+            CheckDebouncingProgress();
+        }
+        else if (m_pressed)
+        {
+            CheckForButtonRepeat();
+        }
+    }
+
+    bool IsPressed()
+    {
+        return m_pressed;
+    }
+
+    int TimePressed()
+    {
+        if (!m_pressed)
+        {
+            return 0;
+        }
+        return (int)millis() - m_millisAtPress;
+    }
+
+private:
+    void BeginDebouncing()
+    {
+        m_millisSinceDebounceStarted = millis();
+        m_futureButtonState = m_currentButtonState;
+        m_checkingDebounce = true;
+    }
+
+    void CheckDebouncingProgress()
+    {
+        if (ElapsedMsSinceStateChange() > DEBOUNCE_MS)
+        {
+            if (m_currentButtonState == m_futureButtonState)
             {
-                if (pressed == m_newState)
+                // state change occurred, do something
+                m_pressed = m_futureButtonState;
+
+                if (m_pressed)
                 {
-                    // state change occurred, do something
-                    m_pressed = m_newState;
-
-                    if (m_pressed && m_pressFunc)
-                    {
-                        m_millisAtPress = millis();
-                        m_pressFunc();
-                    }
-                    else if (!m_pressed && m_releaseFunc)
-                    {
-                        m_releaseFunc();
-                    }
-
+                    m_millisAtPress = m_millisSinceRepeat = millis();
+                    m_func(PRESS);
                 }
-                m_changingState = false;
-            }
-        }
+                else
+                {
+                    m_func(RELEASE);
+                }
 
-        // handle repeat
-        if (m_pressed && (int)millis() - m_millisAtPress > REPEAT_MS)
-        {
-            m_millisAtPress = millis();
-            if (m_pressFunc)
-            {
-                m_pressFunc();
             }
+
+            m_checkingDebounce = false;
         }
+    }
+
+    void CheckForButtonRepeat()
+    {
+        if (ElapsedMsSinceRepeat() > m_repeatRateMs)
+        {
+            m_millisSinceRepeat = millis();
+            m_func(REPEAT);
+        }
+    }
+
+    int ElapsedMsSinceRepeat()
+    {
+        return (int)millis() - m_millisSinceRepeat;
+    }
+
+    int ElapsedMsSinceStateChange()
+    {
+        return (int)millis() - m_millisSinceDebounceStarted;
     }
 };

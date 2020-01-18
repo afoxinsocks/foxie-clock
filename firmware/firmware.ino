@@ -74,6 +74,7 @@ public:
         m_digitMgr.numbers[4] = rtc_hal_second() / 10;
         m_digitMgr.numbers[5] = rtc_hal_second() % 10;
 
+        // TODO: Move all animation out of this function
         for (int i = 0; i < 6; ++i)
         {
             if (m_settings.Get(SETTING_ANIMATION_TYPE) == ANIM_CYCLE_COLORS)
@@ -153,36 +154,54 @@ void setup()
     Button btnColor(PIN_BTN_COLOR);
     Button btnBrightness(PIN_BTN_BRIGHTNESS);
 
-    btnHour.SetPressFunc([&]() {
-        rtc_hal_setTime(rtc_hal_hour() + 1, rtc_hal_minute(), rtc_hal_second());
-        g_clock->RedrawIfNeeded(true);
-    });
-
-    btnMinute.SetPressFunc([&]() {
-        rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
-        g_clock->RedrawIfNeeded(true);
-    });
-
-    btnColor.SetPressFunc([&]() {
-        settings.Set(SETTING_COLOR, settings.Get(SETTING_COLOR) + 8);
-        settings.Save();
-        g_clock->RedrawIfNeeded(true);
-    });
-
-    btnBrightness.SetPressFunc([&]() {
-        const uint8_t step = settings.Get(SETTING_MAX_BRIGHTNESS) / 8;
-        settings.Set(SETTING_CUR_BRIGHTNESS, settings.Get(SETTING_CUR_BRIGHTNESS) + step);
-        if (settings.Get(SETTING_CUR_BRIGHTNESS) > settings.Get(SETTING_MAX_BRIGHTNESS))
+    btnHour.SetHandlerFunc([&](const Button::Event_e evt) {
+        if (btnHour.TimePressed() > 1000)
         {
-            settings.Set(SETTING_CUR_BRIGHTNESS, settings.Get(SETTING_MIN_BRIGHTNESS));
+            rtc_hal_setTime(rtc_hal_hour() + 1, rtc_hal_minute(), rtc_hal_second());
+            g_clock->RedrawIfNeeded(true);
         }
-        settings.Save();
-
-        leds.setBrightness(settings.Get(SETTING_CUR_BRIGHTNESS));
-        leds.show();
     });
 
-    // instead of loop(), so we can use our local variables
+
+    btnMinute.SetHandlerFunc([&](const Button::Event_e evt) {
+        if (evt == Button::PRESS)
+        {
+            rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
+            g_clock->RedrawIfNeeded(true);
+        }
+    });
+
+    btnColor.SetHandlerFunc([&](const Button::Event_e evt) {
+        if (evt == Button::PRESS || evt == Button::REPEAT)
+        {
+            settings.Set(SETTING_COLOR, settings.Get(SETTING_COLOR) + 8);
+            g_clock->RedrawIfNeeded(true);
+        }
+        else if (evt == Button::RELEASE)
+        {
+            settings.Save();
+        }
+    });
+
+    btnBrightness.SetHandlerFunc([&](const Button::Event_e evt) {
+        if (evt == Button::PRESS || evt == Button::REPEAT)
+        {
+            const uint8_t step = settings.Get(SETTING_MAX_BRIGHTNESS) / 8;
+            settings.Set(SETTING_CUR_BRIGHTNESS, settings.Get(SETTING_CUR_BRIGHTNESS) + step);
+            if (settings.Get(SETTING_CUR_BRIGHTNESS) > settings.Get(SETTING_MAX_BRIGHTNESS))
+            {
+                settings.Set(SETTING_CUR_BRIGHTNESS, settings.Get(SETTING_MIN_BRIGHTNESS));
+            }
+            leds.setBrightness(settings.Get(SETTING_CUR_BRIGHTNESS));
+            leds.show();
+        }
+        else if (evt == Button::RELEASE)
+        {
+            settings.Save();
+        }
+    });
+
+    // this loop is used instead of loop(), so we can use our local variables
     while (true)
     {
         BluetoothProcessing();
@@ -198,6 +217,7 @@ void setup()
 
 void loop()
 {
+    // will never be used, while(true) loop above used instead
 }
 
 
