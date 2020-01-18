@@ -4,7 +4,9 @@
 APM3_RTC g_rtc;
 void rtc_hal_init()
 {
-	g_rtc.setTime(0, 0, 0, 0, 1, 1, 20);
+	// force a specific time on boot if desired
+	// rtc_hal_setTime() ...
+	
 	rtc_hal_update();
 }
 
