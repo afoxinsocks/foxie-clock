@@ -99,5 +99,3 @@ private:
         }
     }
 };
-
-Settings *Settings::m_inst = nullptr;

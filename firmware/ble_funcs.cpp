@@ -2,7 +2,7 @@
 // NOTE: The vast majority of this file comes from the SparkFun Apollo3 SDK Example8_BLE_LED source. It has been lightly modified and cleaned up to fit better into the Foxie Clock source code.
 
 #include "Arduino.h"
-#include "rtc_hal.hpp"
+#include "cmd_handler.hpp"
 
 //#define DEBUG
 #define SERIAL_PORT Serial
@@ -63,6 +63,11 @@ void BluetoothInit()
 
   // NUS = "nordic uart service"
   NusStart();
+}
+
+extern "C" void alert(uint8_t val)
+{
+    CmdHandler::ReceiveByte(val);
 }
 
 //*****************************************************************************

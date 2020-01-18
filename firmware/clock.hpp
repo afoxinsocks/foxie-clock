@@ -3,6 +3,7 @@
 #include "settings.hpp"
 #include "digit_manager.hpp"
 #include "animator.hpp"
+#include "rtc_hal.hpp"
 
 enum ClockState_e
 {

@@ -6,7 +6,11 @@
 #include "button.hpp"
 #include "ble_funcs.hpp"
 #include "clock.hpp"
+#include "cmd_handler.hpp"
 #include "settings.hpp"
+
+Settings *Settings::m_inst = nullptr;
+CmdHandler *CmdHandler::m_inst = nullptr;
 
 enum HardwareConfig_e
 {
@@ -22,7 +26,6 @@ enum HardwareConfig_e
     HOLD_SET_TIME_BTN_DELAY = 1000,
 };
 
-Clock *g_clock = nullptr;
 void setup()
 {
     // Serial.begin(115200);
@@ -37,8 +40,10 @@ void setup()
     BluetoothInit();
 
     ClockState_e clockState{STATE_NORMAL};
-    g_clock = new Clock(leds, clockState);
-    g_clock->UseAnimation((AnimationType_e) Settings::Get(SETTING_ANIMATION_TYPE));
+    Clock clock(leds, clockState);
+    clock.UseAnimation((AnimationType_e) Settings::Get(SETTING_ANIMATION_TYPE));
+    
+    CmdHandler cmdHandler(clock);
 
     Button btnSetTime(PIN_BTN_HOUR);
     btnSetTime.SetRepeatRate(HOLD_SET_TIME_BTN_DELAY);
@@ -62,11 +67,11 @@ void setup()
             if (clockState == STATE_NORMAL)
             {
                 clockState = STATE_SET_TIME;
-                g_clock->UseAnimation(ANIM_SET_TIME);
+                clock.UseAnimation(ANIM_SET_TIME);
             }
             else
             {
-                g_clock->UseAnimation((AnimationType_e) Settings::Get(SETTING_ANIMATION_TYPE));
+                clock.UseAnimation((AnimationType_e) Settings::Get(SETTING_ANIMATION_TYPE));
                 clockState = STATE_NORMAL;
             }
         }
@@ -77,7 +82,7 @@ void setup()
             btnMinute.SetEnabled(clockState == STATE_SET_TIME);
         }
 
-        g_clock->RedrawIfNeeded(true);
+        clock.RedrawIfNeeded(true);
     });
 
 
@@ -86,7 +91,7 @@ void setup()
         {
             rtc_hal_setTime(rtc_hal_hour() + 1, 
                 rtc_hal_minute(), rtc_hal_second());
-            g_clock->RedrawIfNeeded(true);
+            clock.RedrawIfNeeded(true);
         }
     });
 
@@ -95,7 +100,7 @@ void setup()
         {
             rtc_hal_setTime(rtc_hal_hour(), 
                 rtc_hal_minute() + 1, rtc_hal_second());
-            g_clock->RedrawIfNeeded(true);
+            clock.RedrawIfNeeded(true);
         }
     });
 
@@ -103,7 +108,7 @@ void setup()
         if (evt == Button::PRESS || evt == Button::REPEAT)
         {
             settings.Set(SETTING_COLOR, settings.Get(SETTING_COLOR) + 8);
-            g_clock->RedrawIfNeeded(true);
+            clock.RedrawIfNeeded(true);
         }
         else if (evt == Button::RELEASE)
         {
@@ -134,7 +139,7 @@ void setup()
     {
         BluetoothProcessing();
 
-        g_clock->RedrawIfNeeded();
+        clock.RedrawIfNeeded();
 
         btnSetTime.Check();
         btnHour.Check();
@@ -148,76 +153,4 @@ void setup()
 void loop()
 {
     // will never be used, while(true) loop above used instead
-}
-
-
-enum AlertCommands_e
-{
-    CMD_SET_TIME = 0x10,
-};
-
-enum AlertState_e
-{
-    AL_STATE_WAIT,
-    AL_STATE_SET_TIME,
-};
-void handleSetTimeState(uint8_t val);
-
-enum ClockSetState_e
-{
-    CS_HOUR,
-    CS_MINUTE,
-    CS_SECOND,
-};
-
-AlertState_e g_alertState = AL_STATE_WAIT;
-extern "C" void alert(uint8_t val)
-{
-    switch (g_alertState)
-    {
-    case AL_STATE_WAIT:
-        if (val == CMD_SET_TIME)
-        {
-            g_alertState = AL_STATE_SET_TIME;
-        }
-        break;
-
-    case AL_STATE_SET_TIME:
-        handleSetTimeState(val);
-
-    default:
-        break;
-    }
-
-    // TODO: Implement a timeout for this
-}
-
-void handleSetTimeState(uint8_t val)
-{
-    static ClockSetState_e state = CS_HOUR;
-
-    static int h, m;
-
-    switch (state)
-    {
-    case CS_HOUR:
-        h = val;
-        state = CS_MINUTE;
-        break;
-
-    case CS_MINUTE:
-        m = val;
-        state = CS_SECOND;
-        break;
-
-    case CS_SECOND:
-        rtc_hal_setTime(h, m, val + 1);
-        state = CS_HOUR;
-        g_alertState = AL_STATE_WAIT;
-        g_clock->RedrawIfNeeded(true);
-        break;
-
-    default:
-        break;
-    }
 }
