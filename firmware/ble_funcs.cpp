@@ -50,87 +50,8 @@ void set_next_wakeup(void);
 void setAdvName(const char* str);
 extern "C" void set_adv_name( const char* str );
 
-// ****************************************
-// 
-// C-callable led functions
-// 
-// ****************************************
-
-enum AlertCommands_e
+void BluetoothInit()
 {
-    CMD_SET_TIME = 0x10,
-};
-
-enum AlertState_e
-{
-    STATE_WAIT,
-    STATE_SET_TIME,
-};
-void handleSetTimeState(uint8_t val);
-
-enum ClockSetState_e
-{
-    CS_HOUR,
-    CS_MINUTE,
-    CS_SECOND,
-};
-
-
-AlertState_e g_alertState = STATE_WAIT;
-
-extern "C" void alert(uint8_t val)
-{
-    switch (g_alertState)
-    {
-    case STATE_WAIT:
-        if (val == CMD_SET_TIME)
-        {
-            g_alertState = STATE_SET_TIME;
-        }
-        break;
-
-    case STATE_SET_TIME:
-        handleSetTimeState(val);
-
-    default:
-        break;
-    }
-
-    // TODO: Implement a timeout for this
-}
-
-extern void UpdateClock(bool force = false);
-void handleSetTimeState(uint8_t val)
-{
-    static ClockSetState_e state = CS_HOUR;
-
-    static int h, m;
-
-    switch (state)
-    {
-    case CS_HOUR:
-        h = val;
-        state = CS_MINUTE;
-        break;
-
-    case CS_MINUTE:
-        m = val;
-        state = CS_SECOND;
-        break;
-
-    case CS_SECOND:
-        rtc_hal_setTime(h, m, val + 1);
-        state = CS_HOUR;
-        g_alertState = STATE_WAIT;
-        UpdateClock(true);
-        break;
-
-    default:
-        break;
-    }
-}
-
-void BLEInit() {
   // wait a bit for the BT hardware to be ready
   delay(400);
 
@@ -300,8 +221,7 @@ scheduler_timer_init(void)
 // Calculate the elapsed time, and update the WSF software timers.
 //
 //*****************************************************************************
-void
-BLEScheduledProcessing(void)
+void BluetoothProcessing(void)
 {
     uint32_t ui32CurrentTime, ui32ElapsedTime;
 

@@ -22,13 +22,15 @@ uint32_t ColorWheel(uint8_t pos) {
 
 class Digit
 {
-protected:
+public:
     enum
     {
         LEDS_PER_DIGIT = 20,
         OFF_COLOR = 0x000000,
+        INVALID = 0xFF,
     };
 
+protected:
     Adafruit_NeoPixel &leds;
     int first;
     int color;

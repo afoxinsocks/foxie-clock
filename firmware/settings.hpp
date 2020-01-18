@@ -13,6 +13,7 @@ enum SettingNames_e
     SETTING_BLINKING_SEPARATORS,
     SETTING_COLOR,
     SETTING_ANIMATION_TYPE,
+    SETTING_24_HOUR_MODE,
 
     // Add new settings here
     
@@ -53,13 +54,14 @@ public:
 
     void ResetToDefaults()
     {
-        Set(SETTING_DIGIT_TYPE, 1); // 1 is edge lit (acrylics), 2 is pixel display
+        Set(SETTING_DIGIT_TYPE, 2); // 1 is edge lit (acrylics), 2 is pixel display
         Set(SETTING_CUR_BRIGHTNESS, 64);
         Set(SETTING_MIN_BRIGHTNESS, 4);
         Set(SETTING_MAX_BRIGHTNESS, 192);
         Set(SETTING_BLINKING_SEPARATORS, 1);
         Set(SETTING_COLOR, 192);
         Set(SETTING_ANIMATION_TYPE, 1);
+        Set(SETTING_24_HOUR_MODE, 0);
 
         Save();
         Load();

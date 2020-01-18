@@ -1,4 +1,4 @@
 #pragma once
 
-void BLEInit();
-void BLEScheduledProcessing(void);
+void BluetoothInit();
+void BluetoothProcessing(void);
