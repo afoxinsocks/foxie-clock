@@ -46,6 +46,12 @@ public:
     {
         m_inst = this;
         Load();
+
+        // this should only happen on a fresh board
+        if (Get(SETTING_DIGIT_TYPE) > 2)
+        {
+            ResetToDefaults();
+        }
     }
     virtual ~Settings()
     {
