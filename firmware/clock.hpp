@@ -52,6 +52,11 @@ public:
         m_animator = AnimatorFactory(m_digitMgr, type);
     }
 
+    void ChangeDigitType()
+    {
+        m_digitMgr.CreateDigitDisplay();
+    }
+
     void UpdateDigits()
     {
         if (Settings::Get(SETTING_24_HOUR_MODE) == 1)

@@ -7,6 +7,8 @@ enum AnimationType_e
     ANIM_NONE = 0,
     ANIM_CYCLE_COLORS,
     ANIM_GLOW,
+
+    // Add new types above here
     ANIM_SET_TIME,
 };
 
