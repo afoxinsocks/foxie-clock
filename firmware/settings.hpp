@@ -45,14 +45,20 @@ private:
 
     uint32_t m_storage[SETTINGS_SIZE] = {0};
 
+    static Settings *m_inst;
 
 public:
     Settings()
     {
+        m_inst = this;
         Load();
     }
+    virtual ~Settings()
+    {
+        m_inst = nullptr;
+    }
 
-    void ResetToDefaults()
+    static void ResetToDefaults()
     {
         Set(SETTING_DIGIT_TYPE, 2); // 1 is edge lit (acrylics), 2 is pixel display
         Set(SETTING_CUR_BRIGHTNESS, 64);
@@ -64,25 +70,24 @@ public:
         Set(SETTING_24_HOUR_MODE, 0);
 
         Save();
-        Load();
     }
 
     // only call after all settings have been updated
-    void Save()
+    static void Save()
     {
         // for Artemis, we're going to write the entire block at once
         // to save write cycles
-        writeBlockToEEPROM(0, (const uint8_t*) m_storage, SETTINGS_SIZE * sizeof(uint32_t));
+        writeBlockToEEPROM(0, (const uint8_t*) m_inst->m_storage, SETTINGS_SIZE * sizeof(uint32_t));
     }
 
-    uint32_t Get(const SettingNames_e name)
+    static uint32_t Get(const SettingNames_e name)
     {
-        return m_storage[(const uint32_t) name];
+        return m_inst->m_storage[(const uint32_t) name];
     }
 
-    void Set(const SettingNames_e name, const uint32_t value)
+    static void Set(const SettingNames_e name, const uint32_t value)
     {
-       m_storage[(const uint32_t) name] = value;
+       m_inst->m_storage[(const uint32_t) name] = value;
     }
 
 private:
@@ -94,3 +99,5 @@ private:
         }
     }
 };
+
+Settings *Settings::m_inst = nullptr;

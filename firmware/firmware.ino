@@ -36,7 +36,8 @@ void setup()
     BluetoothInit();
 
     ClockState_e clockState{STATE_NORMAL};
-    g_clock = new Clock(leds, settings, clockState);
+    g_clock = new Clock(leds, clockState);
+    g_clock->UseAnimation(ANIM_CYCLE_COLORS);
 
     Button btnSetTime(PIN_BTN_HOUR);
     btnSetTime.SetRepeatRate(HOLD_SET_TIME_BTN_DELAY);

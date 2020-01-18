@@ -24,7 +24,6 @@ private:
     };
 
     Adafruit_NeoPixel &m_leds;
-    Settings &m_settings;
     std::vector<Digit*> m_digits;
 
 public:
@@ -32,9 +31,8 @@ public:
     // and can be updated directly for ease of use
     std::vector<uint8_t> numbers{0, 0, 0, 0, 0, 0};
 
-    DigitManager(Adafruit_NeoPixel &leds, Settings &s)
+    DigitManager(Adafruit_NeoPixel &leds)
     : m_leds(leds)
-    , m_settings(s)
     {
         CreateDigitDisplay();
     }
@@ -72,13 +70,13 @@ public:
 private:
     Digit* CreateDigit(const LEDNumbers_e firstLED)
     {
-        if (m_settings.Get(SETTING_DIGIT_TYPE) == 1)
+        if (Settings::Get(SETTING_DIGIT_TYPE) == 1)
         {
-            return new EdgeLitDigit(m_leds, firstLED, m_settings.Get(SETTING_COLOR));
+            return new EdgeLitDigit(m_leds, firstLED, Settings::Get(SETTING_COLOR));
         }
         else
         {
-            return new DisplayDigit(m_leds, firstLED, m_settings.Get(SETTING_COLOR));
+            return new DisplayDigit(m_leds, firstLED, Settings::Get(SETTING_COLOR));
         }
     }
 };

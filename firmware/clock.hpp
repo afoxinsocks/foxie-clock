@@ -1,4 +1,8 @@
 #pragma once
+#include "Adafruit_NeoPixel.h"
+#include "settings.hpp"
+#include "digit_manager.hpp"
+#include "animator.hpp"
 
 enum ClockState_e
 {
@@ -23,24 +27,34 @@ private:
     };
 
     Adafruit_NeoPixel &m_leds;
-    Settings &m_settings;
     DigitManager m_digitMgr;
     int m_lastRedrawTime{-1};
     ClockState_e &m_state;
+    Animator *m_animator{nullptr};
 
 public:
-    Clock(Adafruit_NeoPixel &leds, Settings &settings, ClockState_e &state)
+    Clock(Adafruit_NeoPixel &leds, ClockState_e &state)
     : m_leds(leds)
-    , m_settings(settings)
-    , m_digitMgr(leds, settings)
+    , m_digitMgr(leds)
     , m_state(state)
     {
+        UseAnimation(ANIM_NONE);
         RedrawIfNeeded(true);
+    }
+
+    void UseAnimation(const AnimationType_e type)
+    {
+        if (m_animator)
+        {
+            delete m_animator;
+        }
+
+        m_animator = AnimatorFactory(m_digitMgr, type);
     }
 
     void UpdateDigits()
     {
-        if (m_settings.Get(SETTING_24_HOUR_MODE) == 1)
+        if (Settings::Get(SETTING_24_HOUR_MODE) == 1)
         {
             m_digitMgr.numbers[0] = rtc_hal_hour() / 10;
             m_digitMgr.numbers[1] = rtc_hal_hour() % 10;
@@ -63,23 +77,11 @@ public:
         m_digitMgr.numbers[4] = rtc_hal_second() / 10;
         m_digitMgr.numbers[5] = rtc_hal_second() % 10;
 
-        // TODO: Move all animation out of this function
-        for (int i = 0; i < 6; ++i)
+        if (m_animator)
         {
-            if (m_settings.Get(SETTING_ANIMATION_TYPE) == ANIM_CYCLE_COLORS)
-            {
-                m_settings.Set(SETTING_COLOR, m_settings.Get(SETTING_COLOR) + 16);
-            }
-            if (m_state == STATE_NORMAL)
-            {
-                m_digitMgr.SetDigitColor(i, ColorWheel(m_settings.Get(SETTING_COLOR)));
-            }
-            else
-            {
-                m_digitMgr.SetDigitColor(i, ColorWheel(0));   
-            }
-        
+            m_animator->Go();
         }
+
         m_digitMgr.Draw();
     }
 
@@ -100,7 +102,7 @@ public:
             m_lastRedrawTime = rtc_hal_second();
             UpdateDigits();
 
-            if (m_settings.Get(SETTING_BLINKING_SEPARATORS))
+            if (Settings::Get(SETTING_BLINKING_SEPARATORS))
             {
                 BlinkDigitSeparators();
             }
@@ -111,18 +113,18 @@ public:
 
     void BlinkDigitSeparators()
     {
-        if (m_settings.Get(SETTING_BLINKING_SEPARATORS) != 1)
+        if (Settings::Get(SETTING_BLINKING_SEPARATORS) != 1)
         {
             return;
         }
 
-        int blinkColor = ColorWheel(m_settings.Get(SETTING_COLOR));
+        int blinkColor = ColorWheel(Settings::Get(SETTING_COLOR));
         if (rtc_hal_second() % 2 != 0)
         {
             blinkColor = 0;
         }
 
-        if (m_settings.Get(SETTING_DIGIT_TYPE) == 1)
+        if (Settings::Get(SETTING_DIGIT_TYPE) == 1)
         {
             m_leds.setPixelColor(BLINK_DIGIT_TYPE_1_LED_1, blinkColor);
             m_leds.setPixelColor(BLINK_DIGIT_TYPE_1_LED_2, blinkColor);
