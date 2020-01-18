@@ -25,9 +25,10 @@ enum HardwareConfig_e
 Clock *g_clock = nullptr;
 void setup()
 {
-    // TODO: Change this to a globally accessible class
+    // Serial.begin(115200);
+
     Settings settings;
-    //settings.ResetToDefaults();
+    // settings.ResetToDefaults();
 
     Adafruit_NeoPixel leds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ400);
     leds.begin(); // initialize NeoPixel library
@@ -37,7 +38,7 @@ void setup()
 
     ClockState_e clockState{STATE_NORMAL};
     g_clock = new Clock(leds, clockState);
-    g_clock->UseAnimation(ANIM_CYCLE_COLORS);
+    g_clock->UseAnimation((AnimationType_e) Settings::Get(SETTING_ANIMATION_TYPE));
 
     Button btnSetTime(PIN_BTN_HOUR);
     btnSetTime.SetRepeatRate(HOLD_SET_TIME_BTN_DELAY);
@@ -61,9 +62,11 @@ void setup()
             if (clockState == STATE_NORMAL)
             {
                 clockState = STATE_SET_TIME;
+                g_clock->UseAnimation(ANIM_SET_TIME);
             }
             else
             {
+                g_clock->UseAnimation((AnimationType_e) Settings::Get(SETTING_ANIMATION_TYPE));
                 clockState = STATE_NORMAL;
             }
         }

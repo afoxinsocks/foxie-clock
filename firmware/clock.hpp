@@ -38,7 +38,6 @@ public:
     , m_digitMgr(leds)
     , m_state(state)
     {
-        UseAnimation(ANIM_NONE);
         RedrawIfNeeded(true);
     }
 

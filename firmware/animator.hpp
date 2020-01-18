@@ -7,6 +7,7 @@ enum AnimationType_e
     ANIM_NONE = 0,
     ANIM_CYCLE_COLORS,
     ANIM_GLOW,
+    ANIM_SET_TIME,
 };
 
 class Animator
@@ -93,12 +94,27 @@ public:
     }
 };
 
+class AnimatorSetTime : public Animator
+{
+    using Animator::Animator; 
+
+public:
+    virtual void Go() override
+    {
+        for (int i = 0; i < 6; ++i)
+        {
+            m_digitMgr.SetDigitColor(i, ColorWheel((uint8_t)(Settings::Get(SETTING_COLOR) + 128)));
+        }
+    }
+};
+
 static inline Animator *AnimatorFactory(DigitManager &digitMgr, const AnimationType_e type)
 {
     switch (type)
     {
         case ANIM_CYCLE_COLORS: return new AnimatorCycleAll(digitMgr);
         case ANIM_GLOW: return new AnimatorGlow(digitMgr);
+        case ANIM_SET_TIME: return new AnimatorSetTime(digitMgr);
     }
     
     return new Animator(digitMgr);
