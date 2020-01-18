@@ -113,7 +113,9 @@ void Adafruit_NeoPixel::apollo3Show(
       asm("nop; nop; nop; nop; nop; nop; nop; nop;"
           "nop; nop; nop; nop; nop; nop; nop; nop;"
           "nop; nop; nop; nop; nop; nop; nop; nop;"
-          "nop; nop; nop; nop; nop; nop; nop; nop; nop; nop; nop; nop; nop;");
+          "nop; nop; nop; nop; nop; nop; nop; nop;"
+          "nop; nop; nop; nop; nop; nop; nop; nop;"
+          "nop; nop; nop; nop; nop; nop; nop; nop;");
       if(bitMask >>= 1) {
         asm("nop; nop; nop; nop; nop; nop; nop;");
       } else {
