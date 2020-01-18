@@ -77,6 +77,14 @@ public:
         m_digitMgr.numbers[4] = rtc_hal_second() / 10;
         m_digitMgr.numbers[5] = rtc_hal_second() % 10;
 
+        if (m_settings.Get(SETTING_ANIMATION_TYPE) == ANIM_CYCLE_COLORS)
+        {
+            for (int i = 0; i < 6; ++i)
+            {
+                m_settings.Set(SETTING_COLOR, m_settings.Get(SETTING_COLOR) + 16);
+                m_digitMgr.SetDigitColor(i, ColorWheel(m_settings.Get(SETTING_COLOR)));
+            }
+        }
         m_digitMgr.Draw();
     }
 
@@ -137,8 +145,6 @@ void setup()
 
     g_leds->begin(); // initialize NeoPixel library
     g_leds->setBrightness(settings->Get(SETTING_CUR_BRIGHTNESS)); 
-
-    rtc_hal_init();
 
     g_clock = new Clock(*g_leds, *settings);
 

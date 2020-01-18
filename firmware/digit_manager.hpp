@@ -60,15 +60,13 @@ public:
     {
         for (size_t i = 0; i < NUM_DIGITS; ++i)
         {
-        	// TODO: Move this color changing animation code elsewhere
-            if (m_settings.Get(SETTING_ANIMATION_TYPE) == ANIM_CYCLE_COLORS)
-            {
-                m_settings.Set(SETTING_COLOR, m_settings.Get(SETTING_COLOR) + 4);
-            }
-
-            m_digits[i]->SetColor(ColorWheel(m_settings.Get(SETTING_COLOR)));
             m_digits[i]->Draw(numbers[i]);
         }
+    }
+
+    void SetDigitColor(const size_t digitNum, const uint32_t color)
+    {
+		m_digits[digitNum]->SetColor(color);
     }
 
 private:
