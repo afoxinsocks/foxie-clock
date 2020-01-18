@@ -16,12 +16,14 @@ public:
 private:
     enum
     {
-        DEBOUNCE_MS = 50,
-        DEFAULT_REPEAT_RATE_MS = 200,
+        DEBOUNCE_MS = 10,
+        DEFAULT_REPEAT_RATE_MS = 250,
     };
 
     using Func_t = std::function<void(const Event_e evt)>;
     const uint8_t m_pin;
+
+    bool m_enabled{true};
 
     bool m_currentButtonState{false};
     bool m_futureButtonState{false};
@@ -32,6 +34,7 @@ private:
     int m_millisAtPress{0};
     int m_millisSinceRepeat{0};
 
+    bool m_repeatAllowed{true};
     int m_repeatRateMs{DEFAULT_REPEAT_RATE_MS};
 
     Func_t m_func;
@@ -49,6 +52,20 @@ public:
     void SetHandlerFunc(Func_t &&func)
     {
         m_func = func;
+    }
+
+    void SetEnabled(const bool enabled)
+    {
+        m_enabled = enabled;
+
+        // reset existing state
+        m_checkingDebounce = false;
+        m_pressed = false;
+    }
+
+    void SetAllowRepeat(const bool allow)
+    {
+        m_repeatAllowed = allow;
     }
 
     void SetRepeatRate(const int repeatRateMs)
@@ -76,12 +93,12 @@ public:
 
     bool IsPressed()
     {
-        return m_pressed;
+        return m_enabled && m_pressed;
     }
 
     int TimePressed()
     {
-        if (!m_pressed)
+        if (!m_enabled || !m_pressed)
         {
             return 0;
         }
@@ -102,19 +119,17 @@ private:
         {
             if (m_currentButtonState == m_futureButtonState)
             {
-                // state change occurred, do something
-                m_pressed = m_futureButtonState;
-
-                if (m_pressed)
+                if (m_currentButtonState)
                 {
                     m_millisAtPress = m_millisSinceRepeat = millis();
-                    m_func(PRESS);
+                    SendEvent(PRESS);
                 }
                 else
                 {
-                    m_func(RELEASE);
+                    SendEvent(RELEASE);
                 }
 
+                m_pressed = m_currentButtonState;
             }
 
             m_checkingDebounce = false;
@@ -123,10 +138,10 @@ private:
 
     void CheckForButtonRepeat()
     {
-        if (ElapsedMsSinceRepeat() > m_repeatRateMs)
+        if (ElapsedMsSinceRepeat() > m_repeatRateMs && m_repeatAllowed)
         {
             m_millisSinceRepeat = millis();
-            m_func(REPEAT);
+            SendEvent(REPEAT);
         }
     }
 
@@ -138,5 +153,13 @@ private:
     int ElapsedMsSinceStateChange()
     {
         return (int)millis() - m_millisSinceDebounceStarted;
+    }
+
+    void SendEvent(const Event_e evt)
+    {
+        if (m_enabled)
+        {
+            m_func(evt);
+        }
     }
 };

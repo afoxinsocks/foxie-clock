@@ -7,7 +7,7 @@
 #include "ble_funcs.hpp"
 #include "settings.hpp"
 
-enum
+enum HardwareConfig_e
 {
     PIN_LEDS = 2, // pin "A2" on RedBoard Nano, "LEDs" on the PCB
     NUM_LEDS = 122,
@@ -17,6 +17,14 @@ enum
     PIN_BTN_COLOR = 5, // pin "A5" -- "CLR" on PCB
     PIN_BTN_BRIGHTNESS = 6, // pin "6" -- "BRT" on PCB
     NUM_BTNS = 4,
+
+    HOLD_SET_TIME_BTN_DELAY = 1000,
+};
+
+enum ClockState_e
+{
+    STATE_NORMAL,
+    STATE_SET_TIME,
 };
 
 class Clock
@@ -39,12 +47,14 @@ private:
     Settings &m_settings;
     DigitManager m_digitMgr;
     int m_lastRedrawTime{-1};
+    ClockState_e &m_state;
 
 public:
-    Clock(Adafruit_NeoPixel &leds, Settings &settings)
+    Clock(Adafruit_NeoPixel &leds, Settings &settings, ClockState_e &state)
     : m_leds(leds)
     , m_settings(settings)
     , m_digitMgr(leds, settings)
+    , m_state(state)
     {
         RedrawIfNeeded(true);
     }
@@ -81,7 +91,14 @@ public:
             {
                 m_settings.Set(SETTING_COLOR, m_settings.Get(SETTING_COLOR) + 16);
             }
-            m_digitMgr.SetDigitColor(i, ColorWheel(m_settings.Get(SETTING_COLOR)));
+            if (m_state == STATE_NORMAL)
+            {
+                m_digitMgr.SetDigitColor(i, ColorWheel(m_settings.Get(SETTING_COLOR)));
+            }
+            else
+            {
+                m_digitMgr.SetDigitColor(i, ColorWheel(0));   
+            }
         
         }
         m_digitMgr.Draw();
@@ -90,7 +107,14 @@ public:
 
     void RedrawIfNeeded(bool force = false)
     {
-        rtc_hal_update();
+        if (m_state == STATE_NORMAL)
+        {
+            rtc_hal_update();
+        }
+        else
+        {
+            force = true;
+        }
 
         if (rtc_hal_second() != m_lastRedrawTime || force)
         {
@@ -137,36 +161,72 @@ public:
 Clock *g_clock = nullptr;
 void setup()
 {
+    // TODO: Change this to a globally accessible class
     Settings settings;
     //settings.ResetToDefaults();
 
     Adafruit_NeoPixel leds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ400);
-
     leds.begin(); // initialize NeoPixel library
-    leds.setBrightness(settings.Get(SETTING_CUR_BRIGHTNESS)); 
-
-    g_clock = new Clock(leds, settings);
+    leds.setBrightness(settings.Get(SETTING_CUR_BRIGHTNESS));
 
     BluetoothInit();
 
+    ClockState_e clockState{STATE_NORMAL};
+    g_clock = new Clock(leds, settings, clockState);
+
+    Button btnSetTime(PIN_BTN_HOUR);
+    btnSetTime.SetRepeatRate(HOLD_SET_TIME_BTN_DELAY);
+
     Button btnHour(PIN_BTN_HOUR);
+    btnHour.SetAllowRepeat(false);
+    btnHour.SetEnabled(false);
+
     Button btnMinute(PIN_BTN_MIN);
+    btnMinute.SetAllowRepeat(false);
+    btnMinute.SetEnabled(false);
+
     Button btnColor(PIN_BTN_COLOR);
     Button btnBrightness(PIN_BTN_BRIGHTNESS);
 
-    btnHour.SetHandlerFunc([&](const Button::Event_e evt) {
-        if (btnHour.TimePressed() > 1000)
+
+    btnSetTime.SetHandlerFunc([&](const Button::Event_e evt) {
+        if (evt == Button::REPEAT)
         {
-            rtc_hal_setTime(rtc_hal_hour() + 1, rtc_hal_minute(), rtc_hal_second());
+            btnSetTime.SetAllowRepeat(false);
+            if (clockState == STATE_NORMAL)
+            {
+                clockState = STATE_SET_TIME;
+            }
+            else
+            {
+                clockState = STATE_NORMAL;
+            }
+        }
+        else if (evt == Button::RELEASE && btnSetTime.TimePressed() > HOLD_SET_TIME_BTN_DELAY)
+        {
+            btnSetTime.SetAllowRepeat(true);
+            btnHour.SetEnabled(clockState == STATE_SET_TIME);
+            btnMinute.SetEnabled(clockState == STATE_SET_TIME);
+        }
+
+        g_clock->RedrawIfNeeded(true);
+    });
+
+
+    btnHour.SetHandlerFunc([&](const Button::Event_e evt) {
+        if (evt == Button::RELEASE)
+        {
+            rtc_hal_setTime(rtc_hal_hour() + 1, 
+                rtc_hal_minute(), rtc_hal_second());
             g_clock->RedrawIfNeeded(true);
         }
     });
 
-
     btnMinute.SetHandlerFunc([&](const Button::Event_e evt) {
-        if (evt == Button::PRESS)
+        if (evt == Button::RELEASE || evt == Button::REPEAT)
         {
-            rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
+            rtc_hal_setTime(rtc_hal_hour(), 
+                rtc_hal_minute() + 1, rtc_hal_second());
             g_clock->RedrawIfNeeded(true);
         }
     });
@@ -208,8 +268,10 @@ void setup()
 
         g_clock->RedrawIfNeeded();
 
+        btnSetTime.Check();
         btnHour.Check();
         btnMinute.Check();
+
         btnColor.Check();
         btnBrightness.Check();
     }
@@ -228,8 +290,8 @@ enum AlertCommands_e
 
 enum AlertState_e
 {
-    STATE_WAIT,
-    STATE_SET_TIME,
+    AL_STATE_WAIT,
+    AL_STATE_SET_TIME,
 };
 void handleSetTimeState(uint8_t val);
 
@@ -240,19 +302,19 @@ enum ClockSetState_e
     CS_SECOND,
 };
 
-AlertState_e g_alertState = STATE_WAIT;
+AlertState_e g_alertState = AL_STATE_WAIT;
 extern "C" void alert(uint8_t val)
 {
     switch (g_alertState)
     {
-    case STATE_WAIT:
+    case AL_STATE_WAIT:
         if (val == CMD_SET_TIME)
         {
-            g_alertState = STATE_SET_TIME;
+            g_alertState = AL_STATE_SET_TIME;
         }
         break;
 
-    case STATE_SET_TIME:
+    case AL_STATE_SET_TIME:
         handleSetTimeState(val);
 
     default:
@@ -283,7 +345,7 @@ void handleSetTimeState(uint8_t val)
     case CS_SECOND:
         rtc_hal_setTime(h, m, val + 1);
         state = CS_HOUR;
-        g_alertState = STATE_WAIT;
+        g_alertState = AL_STATE_WAIT;
         g_clock->RedrawIfNeeded(true);
         break;
 
