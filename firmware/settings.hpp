@@ -16,22 +16,21 @@ enum SettingNames_e
     SETTING_24_HOUR_MODE,
 
     // Add new settings here
-    
+
     // Do not add settings after this line
     TOTAL_SETTINGS,
 };
 
-// The purpose of this class is to store user configurable settings 
+// The purpose of this class is to store user configurable settings
 // into EEPROM (including emulated EEPROM stored in flash), only storing
 // when all values have been updated to save write cycles when possible.
-// 
+//
 // For simplicity, every value stored will be a uint32_t, restricting us
 // to 256 total settings.
 class Settings
 {
-public:
-
-private:
+  public:
+  private:
     enum
     {
         SETTINGS_SIZE = 256, // 256 4-byte values, 1024 bytes total on Artemis
@@ -41,7 +40,7 @@ private:
 
     static Settings *m_inst;
 
-public:
+  public:
     Settings()
     {
         m_inst = this;
@@ -77,20 +76,20 @@ public:
     {
         // for Artemis, we're going to write the entire block at once
         // to save write cycles
-        writeBlockToEEPROM(0, (const uint8_t*) m_inst->m_storage, SETTINGS_SIZE * sizeof(uint32_t));
+        writeBlockToEEPROM(0, (const uint8_t *)m_inst->m_storage, SETTINGS_SIZE * sizeof(uint32_t));
     }
 
     static uint32_t Get(const SettingNames_e name)
     {
-        return m_inst->m_storage[(const uint32_t) name];
+        return m_inst->m_storage[(const uint32_t)name];
     }
 
     static void Set(const SettingNames_e name, const uint32_t value)
     {
-       m_inst->m_storage[(const uint32_t) name] = value;
+        m_inst->m_storage[(const uint32_t)name] = value;
     }
 
-private:
+  private:
     void Load()
     {
         for (size_t i = 0; i < TOTAL_SETTINGS; ++i)

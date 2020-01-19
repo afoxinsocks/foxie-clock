@@ -4,7 +4,7 @@
 
 class DigitManager
 {
-private:
+  private:
     enum LEDNumbers_e
     {
         // each number below refers to the top left LED of each column of
@@ -20,19 +20,18 @@ private:
         DIGIT_5_LED = 80,
         DIGIT_6_LED = 100,
 
-    	NUM_DIGITS = 6,        
+        NUM_DIGITS = 6,
     };
 
     Adafruit_NeoPixel &m_leds;
-    std::vector<Digit*> m_digits;
+    std::vector<Digit *> m_digits;
 
-public:
+  public:
     // these store the value of each physical number display on the PCB
     // and can be updated directly for ease of use
     std::vector<uint8_t> numbers{0, 0, 0, 0, 0, 0};
 
-    DigitManager(Adafruit_NeoPixel &leds)
-    : m_leds(leds)
+    DigitManager(Adafruit_NeoPixel &leds) : m_leds(leds)
     {
         CreateDigitDisplay();
     }
@@ -42,7 +41,7 @@ public:
         for (auto &d : m_digits)
         {
             // TODO: Convert to smart pointers so clearing automatically deletes
-            delete(d);
+            delete (d);
         }
         m_digits.clear();
 
@@ -64,11 +63,11 @@ public:
 
     void SetDigitColor(const size_t digitNum, const uint32_t color)
     {
-		m_digits[digitNum]->SetColor(color);
+        m_digits[digitNum]->SetColor(color);
     }
 
-private:
-    Digit* CreateDigit(const LEDNumbers_e firstLED)
+  private:
+    Digit *CreateDigit(const LEDNumbers_e firstLED)
     {
         if (Settings::Get(SETTING_DIGIT_TYPE) == 1)
         {

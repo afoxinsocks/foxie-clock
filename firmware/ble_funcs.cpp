@@ -1,5 +1,6 @@
 #include "ble_funcs.hpp"
-// NOTE: The vast majority of this file comes from the SparkFun Apollo3 SDK Example8_BLE_LED source. It has been lightly modified and cleaned up to fit better into the Foxie Clock source code.
+// NOTE: The vast majority of this file comes from the SparkFun Apollo3 SDK Example8_BLE_LED source. It has been lightly
+// modified and cleaned up to fit better into the Foxie Clock source code.
 
 #include "Arduino.h"
 #include "cmd_handler.hpp"
@@ -8,35 +9,36 @@
 #define SERIAL_PORT Serial
 #define BLE_PERIPHERAL_NAME "Foxie Clock"
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-extern "C" {
-    #include "wsf_types.h"
-    #include "wsf_trace.h"
-    #include "wsf_buf.h"
+extern "C"
+{
+#include "wsf_buf.h"
+#include "wsf_trace.h"
+#include "wsf_types.h"
 
-    #include "hci_handler.h"
-    #include "dm_handler.h"
-    #include "l2c_handler.h"
-    #include "att_handler.h"
-    #include "smp_handler.h"
-    #include "l2c_api.h"
-    #include "att_api.h"
-    #include "smp_api.h"
-    #include "app_api.h"
-    #include "hci_core.h"
-    #include "hci_drv.h"
-    #include "hci_drv_apollo.h"
-    #include "hci_drv_apollo3.h"
+#include "app_api.h"
+#include "att_api.h"
+#include "att_handler.h"
+#include "dm_handler.h"
+#include "hci_core.h"
+#include "hci_drv.h"
+#include "hci_drv_apollo.h"
+#include "hci_drv_apollo3.h"
+#include "hci_handler.h"
+#include "l2c_api.h"
+#include "l2c_handler.h"
+#include "smp_api.h"
+#include "smp_handler.h"
 
-    #include "am_mcu_apollo.h"
-    #include "am_util.h"
+#include "am_mcu_apollo.h"
+#include "am_util.h"
 
-    #include "nus_api.h"
-    #include "app_ui.h"
+#include "app_ui.h"
+#include "nus_api.h"
 
-    #include "wsf_msg.h"
+#include "wsf_msg.h"
 }
 
 //*****************************************************************************
@@ -47,22 +49,22 @@ extern "C" {
 void exactle_stack_init(void);
 void scheduler_timer_init(void);
 void set_next_wakeup(void);
-void setAdvName(const char* str);
-extern "C" void set_adv_name( const char* str );
+void setAdvName(const char *str);
+extern "C" void set_adv_name(const char *str);
 
 void BluetoothInit()
 {
-  // wait a bit for the BT hardware to be ready
-  delay(400);
+    // wait a bit for the BT hardware to be ready
+    delay(400);
 
-  set_adv_name(BLE_PERIPHERAL_NAME);
+    set_adv_name(BLE_PERIPHERAL_NAME);
 
-  HciDrvRadioBoot(0);
+    HciDrvRadioBoot(0);
 
-  exactle_stack_init();
+    exactle_stack_init();
 
-  // NUS = "nordic uart service"
-  NusStart();
+    // NUS = "nordic uart service"
+    NusStart();
 }
 
 extern "C" void alert(uint8_t val)
@@ -75,33 +77,25 @@ extern "C" void alert(uint8_t val)
 // Timer configuration macros.
 //
 //*****************************************************************************
-#define MS_PER_TIMER_TICK           10  // Milliseconds per WSF tick
-#define CLK_TICKS_PER_WSF_TICKS     5   // Number of CTIMER counts per WSF tick.
+#define MS_PER_TIMER_TICK 10      // Milliseconds per WSF tick
+#define CLK_TICKS_PER_WSF_TICKS 5 // Number of CTIMER counts per WSF tick.
 
 //*****************************************************************************
 //
 // WSF buffer pools.
 //
 //*****************************************************************************
-#define WSF_BUF_POOLS               4
+#define WSF_BUF_POOLS 4
 
 // Important note: the size of g_pui32BufMem should includes both overhead of internal
 // buffer management structure, wsfBufPool_t (up to 16 bytes for each pool), and pool
 // description (e.g. g_psPoolDescriptors below).
 
 // Memory for the buffer pool
-static uint32_t g_pui32BufMem[(WSF_BUF_POOLS*16
-         + 16*8 + 32*4 + 64*6 + 280*8) / sizeof(uint32_t)];
+static uint32_t g_pui32BufMem[(WSF_BUF_POOLS * 16 + 16 * 8 + 32 * 4 + 64 * 6 + 280 * 8) / sizeof(uint32_t)];
 
 // Default pool descriptor.
-static wsfBufPoolDesc_t g_psPoolDescriptors[WSF_BUF_POOLS] =
-{
-    {  16,  8 },
-    {  32,  4 },
-    {  64,  6 },
-    { 280,  8 }
-};
-
+static wsfBufPoolDesc_t g_psPoolDescriptors[WSF_BUF_POOLS] = {{16, 8}, {32, 4}, {64, 6}, {280, 8}};
 
 //*****************************************************************************
 //
@@ -111,13 +105,13 @@ static wsfBufPoolDesc_t g_psPoolDescriptors[WSF_BUF_POOLS] =
 uint32_t g_ui32LastTime = 0;
 extern "C" void radio_timer_handler(void);
 
-
 //*****************************************************************************
 //
 // Initialization for the ExactLE stack.
 //
 //*****************************************************************************
-void exactle_stack_init(void){
+void exactle_stack_init(void)
+{
     wsfHandlerId_t handlerId;
 
     //
@@ -129,7 +123,7 @@ void exactle_stack_init(void){
     //
     // Initialize a buffer pool for WSF dynamic memory needs.
     //
-    WsfBufInit(sizeof(g_pui32BufMem), (uint8_t*)g_pui32BufMem, WSF_BUF_POOLS, g_psPoolDescriptors);
+    WsfBufInit(sizeof(g_pui32BufMem), (uint8_t *)g_pui32BufMem, WSF_BUF_POOLS, g_psPoolDescriptors);
 
     //
     // Initialize security.
@@ -187,8 +181,7 @@ void exactle_stack_init(void){
 // Set up a pair of timers to handle the WSF scheduler.
 //
 //*****************************************************************************
-void
-scheduler_timer_init(void)
+void scheduler_timer_init(void)
 {
     //
     // One of the timers will run in one-shot mode and provide interrupts for
@@ -196,17 +189,13 @@ scheduler_timer_init(void)
     //
     am_hal_ctimer_clear(0, AM_HAL_CTIMER_TIMERA);
     am_hal_ctimer_config_single(0, AM_HAL_CTIMER_TIMERA,
-                                (AM_HAL_CTIMER_INT_ENABLE |
-                                 AM_HAL_CTIMER_LFRC_512HZ |
-                                 AM_HAL_CTIMER_FN_ONCE));
+                                (AM_HAL_CTIMER_INT_ENABLE | AM_HAL_CTIMER_LFRC_512HZ | AM_HAL_CTIMER_FN_ONCE));
 
     //
     // The other timer will run continuously and provide a constant time-base.
     //
     am_hal_ctimer_clear(0, AM_HAL_CTIMER_TIMERB);
-    am_hal_ctimer_config_single(0, AM_HAL_CTIMER_TIMERB,
-                                 (AM_HAL_CTIMER_LFRC_512HZ |
-                                 AM_HAL_CTIMER_FN_CONTINUOUS));
+    am_hal_ctimer_config_single(0, AM_HAL_CTIMER_TIMERB, (AM_HAL_CTIMER_LFRC_512HZ | AM_HAL_CTIMER_FN_CONTINUOUS));
 
     //
     // Start the continuous timer.
@@ -240,14 +229,13 @@ void BluetoothProcessing(void)
     // continuous timer. We should be reading often enough that we'll never
     // have more than one overflow.
     //
-    ui32ElapsedTime = (ui32CurrentTime >= g_ui32LastTime ?
-                       (ui32CurrentTime - g_ui32LastTime) :
-                       (0x10000 + ui32CurrentTime - g_ui32LastTime));
+    ui32ElapsedTime = (ui32CurrentTime >= g_ui32LastTime ? (ui32CurrentTime - g_ui32LastTime)
+                                                         : (0x10000 + ui32CurrentTime - g_ui32LastTime));
 
     //
     // Check to see if any WSF ticks need to happen.
     //
-    if ( (ui32ElapsedTime / CLK_TICKS_PER_WSF_TICKS) > 0 )
+    if ((ui32ElapsedTime / CLK_TICKS_PER_WSF_TICKS) > 0)
     {
         //
         // Update the WSF timers and save the current time as our "last
@@ -267,8 +255,7 @@ void BluetoothProcessing(void)
 // Set a timer interrupt for the next upcoming scheduler event.
 //
 //*****************************************************************************
-void
-set_next_wakeup(void)
+void set_next_wakeup(void)
 {
     bool_t bTimerRunning;
     wsfTimerTicks_t xNextExpiration;
@@ -289,10 +276,9 @@ set_next_wakeup(void)
     // time to service it. Otherwise, set an interrupt to wake us up in time to
     // prevent a double-overflow of our continuous timer.
     //
-    if ( xNextExpiration )
+    if (xNextExpiration)
     {
-        am_hal_ctimer_period_set(0, AM_HAL_CTIMER_TIMERA,
-                                 xNextExpiration * CLK_TICKS_PER_WSF_TICKS, 0);
+        am_hal_ctimer_period_set(0, AM_HAL_CTIMER_TIMERA, xNextExpiration * CLK_TICKS_PER_WSF_TICKS, 0);
     }
     else
     {
@@ -310,7 +296,8 @@ set_next_wakeup(void)
 // Interrupt handler for the CTIMERs
 //
 //*****************************************************************************
-extern "C" void radio_timer_handler(void){
+extern "C" void radio_timer_handler(void)
+{
     // Signal radio task to run
 
     WsfTaskSetReady(0, 0);
@@ -321,7 +308,8 @@ extern "C" void radio_timer_handler(void){
 // Interrupt handler for the CTIMERs
 //
 //*****************************************************************************
-extern "C" void am_ctimer_isr(void){
+extern "C" void am_ctimer_isr(void)
+{
     uint32_t ui32Status;
 
     //
@@ -341,32 +329,34 @@ extern "C" void am_ctimer_isr(void){
 // Interrupt handler for BLE
 //
 //*****************************************************************************
-extern "C" void am_ble_isr(void){
+extern "C" void am_ble_isr(void)
+{
     HciDrvIntService();
 }
 
 // ****************************************
-// 
+//
 // Debug print functions
-// 
+//
 // ****************************************
 #define DEBUG_UART_BUF_LEN 256
 
-extern "C" void debug_print(const char* f, const char* F, uint16_t L){
+extern "C" void debug_print(const char *f, const char *F, uint16_t L)
+{
 #ifdef DEBUG
     SERIAL_PORT.printf("fm: %s, file: %s, line: %d\n", f, F, L);
 #endif
 }
 
-extern "C" void debug_printf(char* fmt, ...){
+extern "C" void debug_printf(char *fmt, ...)
+{
 #ifdef DEBUG
-    char    debug_buffer        [DEBUG_UART_BUF_LEN];
+    char debug_buffer[DEBUG_UART_BUF_LEN];
     va_list args;
-    va_start (args, fmt);
-    vsnprintf(debug_buffer, DEBUG_UART_BUF_LEN, (const char*)fmt, args);
-    va_end (args);
+    va_start(args, fmt);
+    vsnprintf(debug_buffer, DEBUG_UART_BUF_LEN, (const char *)fmt, args);
+    va_end(args);
 
     SERIAL_PORT.print(debug_buffer);
-#endif //DEBUG  
+#endif // DEBUG
 }
-

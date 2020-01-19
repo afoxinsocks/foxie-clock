@@ -1,12 +1,12 @@
 #include <vector>
 
 #include "Adafruit_NeoPixel.h"
-#include "rtc_hal.hpp"
-#include "digit_manager.hpp"
-#include "button.hpp"
 #include "ble_funcs.hpp"
+#include "button.hpp"
 #include "clock.hpp"
 #include "cmd_handler.hpp"
+#include "digit_manager.hpp"
+#include "rtc_hal.hpp"
 #include "settings.hpp"
 
 Settings *Settings::m_inst = nullptr;
@@ -17,9 +17,9 @@ enum HardwareConfig_e
     PIN_LEDS = 2, // pin "A2" on RedBoard Nano, "LEDs" on the PCB
     NUM_LEDS = 122,
 
-    PIN_BTN_HOUR = 3, // pin "A3" -- "HR" on PCB
-    PIN_BTN_MIN = 4, // pin "4" -- "MIN" on PCB
-    PIN_BTN_COLOR = 5, // pin "A5" -- "CLR" on PCB
+    PIN_BTN_HOUR = 3,       // pin "A3" -- "HR" on PCB
+    PIN_BTN_MIN = 4,        // pin "4" -- "MIN" on PCB
+    PIN_BTN_COLOR = 5,      // pin "A5" -- "CLR" on PCB
     PIN_BTN_BRIGHTNESS = 6, // pin "6" -- "BRT" on PCB
     NUM_BTNS = 4,
 
@@ -41,8 +41,8 @@ void setup()
 
     ClockState_e clockState{STATE_NORMAL};
     Clock clock(leds, clockState);
-    clock.UseAnimation((AnimationType_e) Settings::Get(SETTING_ANIMATION_TYPE));
-    
+    clock.UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
+
     CmdHandler cmdHandler(clock);
 
     Button btnSetTime(PIN_BTN_HOUR);
@@ -59,7 +59,6 @@ void setup()
     Button btnColor(PIN_BTN_COLOR);
     Button btnBrightness(PIN_BTN_BRIGHTNESS);
 
-
     btnSetTime.SetHandlerFunc([&](const Button::Event_e evt) {
         if (evt == Button::REPEAT)
         {
@@ -71,7 +70,7 @@ void setup()
             }
             else
             {
-                clock.UseAnimation((AnimationType_e) Settings::Get(SETTING_ANIMATION_TYPE));
+                clock.UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
                 clockState = STATE_NORMAL;
             }
         }
@@ -85,12 +84,10 @@ void setup()
         clock.RedrawIfNeeded(true);
     });
 
-
     btnHour.SetHandlerFunc([&](const Button::Event_e evt) {
         if (evt == Button::RELEASE)
         {
-            rtc_hal_setTime(rtc_hal_hour() + 1, 
-                rtc_hal_minute(), rtc_hal_second());
+            rtc_hal_setTime(rtc_hal_hour() + 1, rtc_hal_minute(), rtc_hal_second());
             clock.RedrawIfNeeded(true);
         }
     });
@@ -98,8 +95,7 @@ void setup()
     btnMinute.SetHandlerFunc([&](const Button::Event_e evt) {
         if (evt == Button::RELEASE || evt == Button::REPEAT)
         {
-            rtc_hal_setTime(rtc_hal_hour(), 
-                rtc_hal_minute() + 1, rtc_hal_second());
+            rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
             clock.RedrawIfNeeded(true);
         }
     });

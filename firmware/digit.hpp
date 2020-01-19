@@ -3,19 +3,20 @@
 
 // returns a color transitioning from r -> g -> b and back to r
 // lightly modified from Adafruit NeoPixel strand test
-static inline uint32_t ColorWheel(uint8_t pos) {
+static inline uint32_t ColorWheel(uint8_t pos)
+{
     pos = 255 - pos;
-    if (pos < 85) 
+    if (pos < 85)
     {
-       return Adafruit_NeoPixel::Color(255 - pos * 3, 0, pos * 3);
+        return Adafruit_NeoPixel::Color(255 - pos * 3, 0, pos * 3);
     }
-    
-    if (pos < 170) 
+
+    if (pos < 170)
     {
         pos -= 85;
         return Adafruit_NeoPixel::Color(0, pos * 3, 255 - pos * 3);
     }
-    
+
     pos -= 170;
     return Adafruit_NeoPixel::Color(pos * 3, 255 - pos * 3, 0);
 }
@@ -30,7 +31,7 @@ static inline int ScaleBrightness(const int color, const float brightness)
 
 class Digit
 {
-public:
+  public:
     enum
     {
         LEDS_PER_DIGIT = 20,
@@ -38,14 +39,14 @@ public:
         INVALID = 0xFF,
     };
 
-protected:
+  protected:
     Adafruit_NeoPixel &leds;
     int first;
     int color;
 
-public:
+  public:
     Digit(Adafruit_NeoPixel &strip, const int firstLED, const int onColor)
-    : leds(strip), first(firstLED), color(onColor)
+        : leds(strip), first(firstLED), color(onColor)
     {
     }
 
@@ -68,10 +69,10 @@ public:
 // lights two LEDs at a time under each numeral
 class EdgeLitDigit : public Digit
 {
-private:
+  private:
     using Digit::Digit;
 
-public:
+  public:
     virtual void Draw(const int num)
     {
         AllOff();
@@ -87,10 +88,10 @@ public:
 // draws an entire number on the display using the available LEDs
 class DisplayDigit : public Digit
 {
-private:
+  private:
     using Digit::Digit;
 
-public:
+  public:
     virtual void Draw(const int num)
     {
         if (num >= 0 && num <= 9)
@@ -108,8 +109,10 @@ public:
         }
     }
 
-private:
-        const uint8_t NUMBERS[10 * LEDS_PER_DIGIT] = {
+  private:
+    const uint8_t NUMBERS[10 * LEDS_PER_DIGIT] = {
+        // clang-format off
+
         // 0
             1,      0,
         1,      1,
@@ -228,6 +231,8 @@ private:
             0,      0,
         0,      1,
             1,      0,
-        0,      0,          
+        0,      0,
+
+        // clang-format on
     };
 };

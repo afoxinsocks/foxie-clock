@@ -14,16 +14,15 @@ enum AnimationType_e
 
 class Animator
 {
-protected:
+  protected:
     DigitManager &m_digitMgr;
 
-public:
-    Animator(DigitManager &digitMgr)
-    : m_digitMgr(digitMgr)
+  public:
+    Animator(DigitManager &digitMgr) : m_digitMgr(digitMgr)
     {
     }
 
-    virtual void Go() 
+    virtual void Go()
     {
         // does nothing except update the digit colors to the current setting
         for (int i = 0; i < 6; ++i)
@@ -32,7 +31,7 @@ public:
         }
     };
 
-    virtual bool IsFast() 
+    virtual bool IsFast()
     {
         return false;
     }
@@ -40,11 +39,12 @@ public:
 
 class AnimatorCycleAll : public Animator
 {
-    using Animator::Animator; 
-private:
+    using Animator::Animator;
+
+  private:
     uint8_t color{0};
 
-public:
+  public:
     virtual void Go() override
     {
         for (int i = 0; i < 6; ++i)
@@ -57,13 +57,14 @@ public:
 
 class AnimatorGlow : public Animator
 {
-    using Animator::Animator; 
-private:
+    using Animator::Animator;
+
+  private:
     float m_brightness{1.0f};
     float m_incrementer{0.1f};
     int m_millis{0};
 
-public:
+  public:
     virtual void Go() override
     {
         int scaledColor = ScaleBrightness(ColorWheel(Settings::Get(SETTING_COLOR)), m_brightness);
@@ -72,7 +73,7 @@ public:
             m_digitMgr.SetDigitColor(i, scaledColor);
         }
 
-        if ((int) millis() - m_millis >= 25)
+        if ((int)millis() - m_millis >= 25)
         {
             m_millis = millis();
 
@@ -98,9 +99,9 @@ public:
 
 class AnimatorSetTime : public Animator
 {
-    using Animator::Animator; 
+    using Animator::Animator;
 
-public:
+  public:
     virtual void Go() override
     {
         for (int i = 0; i < 6; ++i)
@@ -114,10 +115,13 @@ static inline Animator *AnimatorFactory(DigitManager &digitMgr, const AnimationT
 {
     switch (type)
     {
-        case ANIM_CYCLE_COLORS: return new AnimatorCycleAll(digitMgr);
-        case ANIM_GLOW: return new AnimatorGlow(digitMgr);
-        case ANIM_SET_TIME: return new AnimatorSetTime(digitMgr);
+    case ANIM_CYCLE_COLORS:
+        return new AnimatorCycleAll(digitMgr);
+    case ANIM_GLOW:
+        return new AnimatorGlow(digitMgr);
+    case ANIM_SET_TIME:
+        return new AnimatorSetTime(digitMgr);
     }
-    
+
     return new Animator(digitMgr);
 }

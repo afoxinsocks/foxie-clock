@@ -1,9 +1,9 @@
 #pragma once
 #include "Adafruit_NeoPixel.h"
-#include "settings.hpp"
-#include "digit_manager.hpp"
 #include "animator.hpp"
+#include "digit_manager.hpp"
 #include "rtc_hal.hpp"
+#include "settings.hpp"
 
 enum ClockState_e
 {
@@ -13,7 +13,7 @@ enum ClockState_e
 
 class Clock
 {
-private:
+  private:
     enum DigitSeparatorLEDs_e
     {
         // for edge lit digits, use the two LEDs between rows 2/3 and 4/5
@@ -33,11 +33,8 @@ private:
     ClockState_e &m_state;
     Animator *m_animator{nullptr};
 
-public:
-    Clock(Adafruit_NeoPixel &leds, ClockState_e &state)
-    : m_leds(leds)
-    , m_digitMgr(leds)
-    , m_state(state)
+  public:
+    Clock(Adafruit_NeoPixel &leds, ClockState_e &state) : m_leds(leds), m_digitMgr(leds), m_state(state)
     {
         RedrawIfNeeded(true);
     }
@@ -75,7 +72,7 @@ public:
                 m_digitMgr.numbers[0] = Digit::INVALID;
             }
         }
-        
+
         m_digitMgr.numbers[2] = rtc_hal_minute() / 10;
         m_digitMgr.numbers[3] = rtc_hal_minute() % 10;
 
@@ -90,14 +87,13 @@ public:
         m_digitMgr.Draw();
     }
 
-
     void RedrawIfNeeded(bool force = false)
     {
         if (m_state == STATE_NORMAL)
         {
             rtc_hal_update();
         }
-        
+
         if (m_state != STATE_NORMAL || (m_animator && m_animator->IsFast()))
         {
             force = true;

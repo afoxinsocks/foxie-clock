@@ -2,10 +2,10 @@
 #include <functional>
 
 // Debouncing button class with press, repeat, release events that
-// are sent to callback handler 
+// are sent to callback handler
 class Button
 {
-public:
+  public:
     enum Event_e
     {
         PRESS,
@@ -13,7 +13,7 @@ public:
         RELEASE,
     };
 
-private:
+  private:
     enum
     {
         DEBOUNCE_MS = 10,
@@ -38,13 +38,12 @@ private:
     int m_repeatRateMs{DEFAULT_REPEAT_RATE_MS};
 
     Func_t m_func;
-    
-public:
+
+  public:
     Button(const uint8_t pin)
-    : m_pin(pin)
-    , m_func([](const Event_e evt){
-        // empty function that does nothing by default
-    }) 
+        : m_pin(pin), m_func([](const Event_e evt) {
+              // empty function that does nothing by default
+          })
     {
         pinMode(m_pin, INPUT_PULLUP);
     }
@@ -105,7 +104,7 @@ public:
         return (int)millis() - m_millisAtPress;
     }
 
-private:
+  private:
     void BeginDebouncing()
     {
         m_millisSinceDebounceStarted = millis();
