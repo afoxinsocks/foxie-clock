@@ -1,6 +1,7 @@
 #pragma once
 #include "digit.hpp"
 #include "settings.hpp"
+#include <vector>
 
 class DigitManager
 {

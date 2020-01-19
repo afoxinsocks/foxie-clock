@@ -14,9 +14,10 @@
 
 extern "C"
 {
+// clang-format off
 #include "wsf_buf.h"
-#include "wsf_trace.h"
 #include "wsf_types.h"
+#include "wsf_trace.h"
 
 #include "app_api.h"
 #include "att_api.h"
@@ -39,6 +40,7 @@ extern "C"
 #include "nus_api.h"
 
 #include "wsf_msg.h"
+    // clang-format on
 }
 
 //*****************************************************************************

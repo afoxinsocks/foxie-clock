@@ -31,7 +31,24 @@ void setup()
     // Serial.begin(115200);
 
     Settings settings;
-    // settings.ResetToDefaults();
+    if (false) // change to 'true' to allow the below code to change the settings on boot
+    {
+
+        // NOTE: These settings are stored while the system is off. The mobile app
+        // can control any of these settings and this section will be removed once
+        // the mobile app launches.
+
+        Settings::Set(SETTING_DIGIT_TYPE, 1); // 1 is edge lit (acrylics), 2 is pixel display
+        Settings::Set(SETTING_CUR_BRIGHTNESS, 128);
+        Settings::Set(SETTING_MIN_BRIGHTNESS, 4);
+        Settings::Set(SETTING_MAX_BRIGHTNESS, 255);
+        Settings::Set(SETTING_BLINKING_SEPARATORS, 1);
+        Settings::Set(SETTING_COLOR, 192);
+        Settings::Set(SETTING_ANIMATION_TYPE, 1);
+        Settings::Set(SETTING_24_HOUR_MODE, 0);
+
+        // Settings::Save(); // UNCOMMENT to save these settings into flash
+    }
 
     Adafruit_NeoPixel leds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ400);
     leds.begin(); // initialize NeoPixel library
@@ -93,7 +110,7 @@ void setup()
     });
 
     btnMinute.SetHandlerFunc([&](const Button::Event_e evt) {
-        if (evt == Button::RELEASE || evt == Button::REPEAT)
+        if (evt == Button::RELEASE)
         {
             rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
             clock.RedrawIfNeeded(true);
