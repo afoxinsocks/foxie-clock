@@ -67,9 +67,10 @@ class CmdHandler
                     m_clock.UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
                 }
             }
-                m_clock.RedrawIfNeeded(true);
-                break;
+            break;
             }
+
+            m_clock.RedrawIfNeeded(true);
             m_state = STATE_WAIT;
             m_rx.clear();
         }

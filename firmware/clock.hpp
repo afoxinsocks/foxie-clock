@@ -4,6 +4,7 @@
 #include "digit_manager.hpp"
 #include "rtc_hal.hpp"
 #include "settings.hpp"
+#include <memory>
 
 enum ClockState_e
 {
@@ -31,7 +32,7 @@ class Clock
     DigitManager m_digitMgr;
     int m_lastRedrawTime{-1};
     ClockState_e &m_state;
-    Animator *m_animator{nullptr};
+    std::shared_ptr<Animator> m_animator;
 
   public:
     Clock(Adafruit_NeoPixel &leds, ClockState_e &state) : m_leds(leds), m_digitMgr(leds), m_state(state)
@@ -41,11 +42,6 @@ class Clock
 
     void UseAnimation(const AnimationType_e type)
     {
-        if (m_animator)
-        {
-            delete m_animator;
-        }
-
         m_animator = AnimatorFactory(m_digitMgr, type);
     }
 

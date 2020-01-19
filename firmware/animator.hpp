@@ -1,6 +1,7 @@
 #pragma once
 #include "digit_manager.hpp"
 #include "settings.hpp"
+#include <memory>
 
 enum AnimationType_e
 {
@@ -31,6 +32,8 @@ class Animator
         }
     };
 
+    // Fast animations occur as often as possible (like AnimatorGlow below),
+    // while non-fast animations occur once a second.
     virtual bool IsFast()
     {
         return false;
@@ -111,17 +114,17 @@ class AnimatorSetTime : public Animator
     }
 };
 
-static inline Animator *AnimatorFactory(DigitManager &digitMgr, const AnimationType_e type)
+static inline std::shared_ptr<Animator> AnimatorFactory(DigitManager &digitMgr, const AnimationType_e type)
 {
     switch (type)
     {
     case ANIM_CYCLE_COLORS:
-        return new AnimatorCycleAll(digitMgr);
+        return std::make_shared<AnimatorCycleAll>(digitMgr);
     case ANIM_GLOW:
-        return new AnimatorGlow(digitMgr);
+        return std::make_shared<AnimatorGlow>(digitMgr);
     case ANIM_SET_TIME:
-        return new AnimatorSetTime(digitMgr);
+        return std::make_shared<AnimatorSetTime>(digitMgr);
     }
 
-    return new Animator(digitMgr);
+    return std::make_shared<Animator>(digitMgr);
 }

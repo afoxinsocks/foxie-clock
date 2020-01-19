@@ -1,6 +1,7 @@
 #pragma once
 #include "digit.hpp"
 #include "settings.hpp"
+#include <memory>
 #include <vector>
 
 class DigitManager
@@ -25,7 +26,8 @@ class DigitManager
     };
 
     Adafruit_NeoPixel &m_leds;
-    std::vector<Digit *> m_digits;
+    // shared pointers used so that destructing automatically deletes the digit
+    std::vector<std::shared_ptr<Digit>> m_digits;
 
   public:
     // these store the value of each physical number display on the PCB
@@ -39,11 +41,6 @@ class DigitManager
 
     void CreateDigitDisplay()
     {
-        for (auto &d : m_digits)
-        {
-            // TODO: Convert to smart pointers so clearing automatically deletes
-            delete (d);
-        }
         m_digits.clear();
 
         m_digits.push_back(CreateDigit(DIGIT_1_LED));
@@ -68,15 +65,15 @@ class DigitManager
     }
 
   private:
-    Digit *CreateDigit(const LEDNumbers_e firstLED)
+    std::shared_ptr<Digit> CreateDigit(const LEDNumbers_e firstLED)
     {
         if (Settings::Get(SETTING_DIGIT_TYPE) == 1)
         {
-            return new EdgeLitDigit(m_leds, firstLED, Settings::Get(SETTING_COLOR));
+            return std::make_shared<EdgeLitDigit>(m_leds, firstLED, Settings::Get(SETTING_COLOR));
         }
         else
         {
-            return new DisplayDigit(m_leds, firstLED, Settings::Get(SETTING_COLOR));
+            return std::make_shared<DisplayDigit>(m_leds, firstLED, Settings::Get(SETTING_COLOR));
         }
     }
 };
