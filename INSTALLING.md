@@ -7,7 +7,7 @@ So it's time to update the firmware, for the first time, for the last time. Hope
    At this moment, 1.8.10 is the latest version.
 2. Open the Arduino Preferences menu (File->Preferences or Arduino-Preferences on macOS)
 3. Enter `https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json` 
-   into the Additional Boards Manager URLs -- this is to allow Arduino to download the RedBoard support in the next step.
+   into the Additional Boards Manager URLs -- this is to allow Arduino to download the RedBoard support in the following steps.
 4. Click OK to close the Preferences window
 5. Open `Tools->Board` and select `Boards Manager`
 6. Search for `RedBoard Nano` to install the `SparkFun Apollo3 Boards` and select `Install`. 
