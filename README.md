@@ -4,6 +4,7 @@
 Welcome to the Foxie Clock, a fully open-source RGB clock with nixie-like edge-lit acrylic digits. Or... an RGB pixel display clock, if you like!
 
 ![Foxie Clock Image](images/clock.jpg)
+![Foxie Clock Pixel Display](images/pixel_display.jpg)
 
 ## Looks
 With a look inspired by old nixie tubes and with capacitors protruding through the surface like vacuum tubes, the Foxie Clock is a fun, colorful way to display the time at your desk, office, or anywhere. Brightness, color, and time are all adjustable directly with 4 buttons on the back, with much more adjustability via Bluetooth coming in the near future.
