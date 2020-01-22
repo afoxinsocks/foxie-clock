@@ -114,4 +114,8 @@ Make sure that the board is completely flush with the inside back of the case.
 
 You can now put the lid on top of the PCB and insert the 4 bolts, if desired. Make sure not to over-tighten the bolts.
 
+## Step 14
+
+[Use Arduino to program the firmware onto your Foxie Clock](INSTALLING.md)
+
 [Continue onto the rest of the assembly](ASSEMBLY.md)
