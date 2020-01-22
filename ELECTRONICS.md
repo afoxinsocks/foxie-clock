@@ -118,7 +118,7 @@ Make sure that the board is completely flush with the inside back of the case.
 ![](/images/assembly_step13d.jpg)
 ![](/images/assembly_step13e.jpg)
 
-You can now put the lid on top of the PCB and insert the 4 bolts, if desired. Make sure not to over-tighten the bolts.
+You can now put the lid on top of the PCB and insert the 4 bolts, if desired. Make sure not to overtighten the bolts.
 
 ## Step 14
 
