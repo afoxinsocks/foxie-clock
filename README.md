@@ -7,7 +7,7 @@ Welcome to the Foxie Clock, a fully open-source RGB clock with nixie-like edge-l
 ![Foxie Clock Pixel Display](images/pixel_display.jpg)
 
 ## Get your own
-Head over to the [Foxie Clock store on Tindie TODO: CORRECT LINK](www.tindie.com) to order your own kit.
+Head over to Tindie to get a [Foxie Clock ASSEMBLED](https://www.tindie.com/products/19193/) to order your own kit with an assembled (no soldering!) PCB, or [Foxie Clock KIT](https://www.tindie.com/products/19192/) if you like a little [soldering](ELECTRONICS.md) in your diet.
 
 # 3D Print your own case or modify it yourself!
 All .STL models and the full Fusion360 project and the .step files are also available for anyone wanting to make changes to the design more easily. Head over to [Thingiverse](https://www.thingiverse.com/thing:4114349) to download.
