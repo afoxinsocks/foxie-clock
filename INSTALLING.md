@@ -20,7 +20,10 @@ So it's time to update the firmware, for the first time, for the last time. Hope
    then plug in the clock again and select the newly available port. 
    
    Note: On some operating systems (such as macOS), you'll need to install CH340 drivers for the board support
-   to detect the correct serial port. See [SparkFun's How to Install CH340 Drivers](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers) for more information.
+   to detect the correct serial port. 
+   See [SparkFun's How to Install CH340 Drivers](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers)
+   for more information.
+   
 11. **OPTIONAL, but highly recommended:** Select `Tools->Burn Bootloader` to write the latest version of SparkFun's bootloader 
    to the Nano -- this is still important for the Artemis boards for Arduino to be able to write the firmware reliably.
 
