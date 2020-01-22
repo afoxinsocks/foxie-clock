@@ -13,7 +13,7 @@ So it's time to update the firmware, for the first time, for the last time. Hope
 6. Search for `RedBoard Nano` to install the `SparkFun Apollo3 Boards` and select `Install`. 
    At this moment, 1.0.27 is the latest version of the Apollo3 Board support from SparkFun.
 7. Select `Tools->Programmer->Ambiq Secure Bootloader`
-8. Select `Board->SparkFun RedBoard Artemis Nano`
+8. Select `Tools->Board->SparkFun RedBoard Artemis Nano`
 9. Make sure your Foxie Clock is plugged into your computer with a USB-C cable.
 10. Select `Tools->Port` in Arduino and choose the correct port for your Foxie Clock. 
    If there is more than one available port, you can unplug the clock, open `Tools->Port` to see what is there,
