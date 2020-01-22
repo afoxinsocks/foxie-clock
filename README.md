@@ -13,7 +13,7 @@ Head over to the [Foxie Clock store on Tindie TODO: CORRECT LINK](www.tindie.com
 All .STL models and the full Fusion360 project and the .step files are also available for anyone wanting to make changes to the design more easily. Head over to [Thingiverse](https://www.thingiverse.com/thing:4114349) to download.
 
 # Looks
-With a look inspired by old nixie tubes and with capacitors protruding through the surface like vacuum tubes, the Foxie Clock is a fun, colorful way to display the time at your desk, office, or anywhere. Brightness, color, and time are all adjustable directly with 4 buttons on the back, with much more adjustability via an iOS and Android app using Bluetooth in the near future.
+With a look inspired by old nixie tubes and with capacitors protruding through the surface like vacuum tubes, the Foxie Clock is a fun, colorful way to display the time at your desk, office, or anywhere. Brightness, color, and time are all adjustable directly with 4 buttons on the back, with much more adjustability via an iOS/Android app using Bluetooth in the near future.
 
 ![Foxie Clock Case Render Image2](images/case_render2.png)
 
