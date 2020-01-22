@@ -45,7 +45,7 @@ After verifying (and resoldering, if necessary) the single pin holding each of t
 
 ## Step 6
 
-Prepare the RedBoard Nano by inserting the two headers into the *bottom* of the RedBoard (the side without the USB connector). The 2-pin header goes into the VIN and GND holes. **Do not solder yet!**
+Prepare the RedBoard Nano by inserting the two headers into the *bottom* of the RedBoard (the side without the USB connector). The 2-pin header goes into the VIN and GND holes. The 5-pin header goes into the holes labled `6 A5 4 A3 A2`. **Do not solder yet!**
 
 **NOTE**: Make sure the long pins of the jumpers are going through the RedBoard to the "top" side, otherwise you'll have to clip them off later when we trim the button pins.
 
