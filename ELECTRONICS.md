@@ -35,7 +35,7 @@ Turn the board over with the buttons in it. They are a snug fit and **should** s
 
 ## Step 4
 
-Begin by soldering one of the pins for each button. After doing so, double check at the buttons are still flush against the PCB -- the tolerances on the back of the 3d printed case require these buttons to be exactly flush next to the PCB. 
+Begin by soldering one of the pins for each button. After doing so, double check that the buttons are still right against the PCB -- the tolerances on the back of the 3d printed case require these buttons to be exactly flush to the PCB. 
 
 ![](/images/assembly_step4.jpg)
 
