@@ -94,7 +94,7 @@ Remove the assembly helper, and marvel at your perfectly placed RedBoard Nano on
 
 Trim the excess height of the button leads. 
 
-**NOTE:** It is not important to get them flush. They just to be trimmed to be about the same height as the LEDs, so that the lid sits correctly inside the case.
+**NOTE:** It is not important to get them flush. They just need to be trimmed to be about the same height as the LEDs, so that the lid sits correctly inside the case.
 
 **NOTE:** It's a good idea to reflow the solder on these joints after being trimmed.
 
