@@ -2,6 +2,8 @@
 
 Time to dust off your soldering skills, we've just got a few buttons to solder and finally need to attach the RedBoard Nano to the Foxie Clock PCB. 
 
+![Parts](/images/assembly_tools.jpg)
+
 Included parts:
 * One 2-pin header
 * One 5-pin header
