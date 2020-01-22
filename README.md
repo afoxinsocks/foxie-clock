@@ -18,13 +18,15 @@ With a look inspired by old nixie tubes and with capacitors protruding through t
 ![Foxie Clock Case Render Image2](images/case_render2.png)
 
 # Easy to assemble
+The clock is [easy to assemble](ASSEMBLY.md) and looks beautiful when complete.
+
 ![Foxie Clock Case Assembled](images/digits_step3.jpg)
 
-The case is fully 3D printed and included with the kit, available in a few colors. 
+The case is 3D printed and can be ordered with the kit, available in a few colors.
 
 ![Foxie Clock Case Assembly](images/assembly_step0.jpg)
 
-The circuit board can be ordered fully soldered, or if you like, you can solder the 4 buttons and RedBoard Nano yourself, using the plentiful pictures in the [assembly guide](ASSEMBLY.md).
+The circuit board can be ordered fully soldered, or if you like, you can solder the 4 buttons and RedBoard Nano yourself, using the plentiful pictures in the [electronics assembly guide](ELECTRONICS.md).
 
 # Easy to hack
 The Foxie Clock is powered by a SparkFun RedBoard Artemis Nano (https://www.sparkfun.com/products/15443), an extremely cool, fully Arduino-compatible board that supports Bluetooth LE 5.0 and much, much more. It is included in every Foxie Clock kit, along with everything you need (except a USB-C cable) to get running.
