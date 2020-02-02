@@ -59,7 +59,7 @@ class Settings
 
     static void ResetToDefaults()
     {
-        Set(SETTING_DIGIT_TYPE, 2); // 1 is edge lit (acrylics), 2 is pixel display
+        Set(SETTING_DIGIT_TYPE, 1); // 1 is edge lit (acrylics), 2 is pixel display
         Set(SETTING_CUR_BRIGHTNESS, 64);
         Set(SETTING_MIN_BRIGHTNESS, 4);
         Set(SETTING_MAX_BRIGHTNESS, 192);
