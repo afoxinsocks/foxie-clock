@@ -67,12 +67,12 @@ After the digit separator is completely inserted, go ahead and put in the 5th ro
 
 ## Step 6
 
-Repeat the same steps for rows 4 and 3.
+Repeat the same steps for the rest of the rows, placing a digit separator again after the 4th row before the 3rd, then after the 2nd row before the 1st.
+As more and more digits are in the lid, it may be difficult to see into which holes you're inserting the tabs. Try looking straight down from above the acrylic digit as you're inserting, or turn the clock around.
 
 ![](/images/digits_step6a.jpg)
 ![](/images/digits_step6b.jpg)
 ![](/images/digits_step6c.jpg)
-As more and more digits are in the lid, it may be difficult to see into which holes you're inserting the tabs. Try looking straight down from above the digit.
 ![](/images/digits_step6d.jpg)
 
 ## Step 7
@@ -82,3 +82,7 @@ You're nearly done! Carefully straighten out the rows of digits, making sure the
 ![](/images/digits_step7.jpg)
 
 # Congratulations!
+
+If you haven't already powered up the clock, find a USB-C cable and try it now. [Installing the latest firmware is straight-forward](INSTALLING.md). 
+
+Finally, [set the time, colors, and brightness](USAGE.md).
