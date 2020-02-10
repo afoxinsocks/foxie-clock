@@ -44,7 +44,11 @@ void setup()
         Settings::Set(SETTING_MAX_BRIGHTNESS, 255);
         Settings::Set(SETTING_BLINKING_SEPARATORS, 1);
         Settings::Set(SETTING_COLOR, 192);
-        Settings::Set(SETTING_ANIMATION_TYPE, 1);
+
+        Settings::Set(SETTING_ANIMATION_TYPE, ANIM_NONE);
+        // Settings::Set(SETTING_ANIMATION_TYPE, ANIM_CYCLE_COLORS);
+        // Settings::Set(SETTING_ANIMATION_TYPE, ANIM_GLOW);
+
         Settings::Set(SETTING_24_HOUR_MODE, 0);
 
         // Settings::Save(); // UNCOMMENT to save these settings into flash
