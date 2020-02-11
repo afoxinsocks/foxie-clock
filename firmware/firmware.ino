@@ -63,7 +63,6 @@ void setup()
 
     ClockState_e clockState{STATE_NORMAL};
     Clock clock(leds, clockState);
-    clock.UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
 
     CmdHandler cmdHandler(clock);
 
@@ -78,6 +77,9 @@ void setup()
     btnMinute.SetAllowRepeat(true);
     btnMinute.SetRepeatRate(100);
     btnMinute.SetEnabled(false);
+
+    Button btnSetAnimationMode(PIN_BTN_MIN); // M... for Mode! ... :)
+    btnSetAnimationMode.SetAllowRepeat(false);
 
     Button btnColor(PIN_BTN_COLOR);
     Button btnBrightness(PIN_BTN_BRIGHTNESS);
@@ -105,6 +107,9 @@ void setup()
             btnSetTime.SetAllowRepeat(true);
             btnHour.SetEnabled(clockState == STATE_SET_TIME);
             btnMinute.SetEnabled(clockState == STATE_SET_TIME);
+
+            // disable the animation mode button
+            btnSetAnimationMode.SetEnabled(clockState == STATE_NORMAL);
         }
 
         clock.Draw();
@@ -123,6 +128,21 @@ void setup()
         {
             rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
             clock.Draw();
+        }
+    });
+
+    btnSetAnimationMode.SetHandlerFunc([&](const Button::Event_e evt) {
+        if (evt == Button::RELEASE)
+        {
+            settings.Set(SETTING_ANIMATION_TYPE, settings.Get(SETTING_ANIMATION_TYPE) + 1);
+            if (settings.Get(SETTING_ANIMATION_TYPE) == ANIM_TOTAL)
+            {
+                settings.Set(SETTING_ANIMATION_TYPE, ANIM_NONE);
+            }
+            settings.Save();
+            clock.UseAnimation((AnimationType_e)settings.Get(SETTING_ANIMATION_TYPE));
+
+            clock.DisplayValue(settings.Get(SETTING_ANIMATION_TYPE) * 1);
         }
     });
 
@@ -166,7 +186,7 @@ void setup()
         btnSetTime.Check();
         btnHour.Check();
         btnMinute.Check();
-
+        btnSetAnimationMode.Check();
         btnColor.Check();
         btnBrightness.Check();
     }

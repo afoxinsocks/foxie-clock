@@ -10,6 +10,7 @@ enum ClockState_e
 {
     STATE_NORMAL,
     STATE_SET_TIME,
+    STATE_DISPLAY_VALUE,
 };
 
 class Clock
@@ -34,9 +35,12 @@ class Clock
     ClockState_e &m_state;
     std::shared_ptr<Animator> m_animator;
 
+    int m_millisSinceDisplayValueEntered{0};
+
   public:
     Clock(Adafruit_NeoPixel &leds, ClockState_e &state) : m_leds(leds), m_digitMgr(leds), m_state(state)
     {
+        UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
         Draw();
     }
 
@@ -56,7 +60,28 @@ class Clock
         m_digitMgr.CreateDigitDisplay();
     }
 
-    void UpdateDigits()
+    void DisplayValue(unsigned int value)
+    {
+        m_state = STATE_DISPLAY_VALUE;
+        m_millisSinceDisplayValueEntered = millis();
+        UseAnimation(ANIM_NONE);
+
+        for (auto &num : m_digitMgr.numbers)
+        {
+            num = Digit::INVALID;
+        }
+
+        int digitNum = 5;
+        do
+        {
+            m_digitMgr.numbers[digitNum--] = value % 10;
+            value /= 10;
+        } while (value && digitNum >= 0);
+
+        m_animator->Go();
+    }
+
+    void UpdateDigitsFromRTC()
     {
         if (Settings::Get(SETTING_24_HOUR_MODE) == 1)
         {
@@ -81,38 +106,53 @@ class Clock
         m_digitMgr.numbers[4] = rtc_hal_second() / 10;
         m_digitMgr.numbers[5] = rtc_hal_second() % 10;
 
-        if (m_animator)
-        {
-            m_animator->Go();
-        }
+        BlinkDigitSeparators();
+
+        m_animator->Go();
 
         m_digitMgr.Draw();
     }
 
     void Check()
     {
+        bool update = false;
+
+        if (m_state == STATE_DISPLAY_VALUE && ElapsedMsSinceDisplayModeStarted() >= 1000)
+        {
+            m_state = STATE_NORMAL;
+            UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
+        }
+
         if (m_state == STATE_NORMAL)
         {
             rtc_hal_update();
         }
-
-        bool update = false;
-        if (rtc_hal_second() != m_lastRedrawTime)
+        else
         {
-            m_lastRedrawTime = rtc_hal_second();
+            // whenever not in normal mode, always update
             update = true;
         }
 
-        if (update || m_animator && m_animator->IsFast())
+        if (rtc_hal_second() != m_lastRedrawTime)
         {
+            update = true;
+        }
+
+        if (update || m_animator->IsFast())
+        {
+            m_lastRedrawTime = rtc_hal_second();
             Draw();
         }
     }
 
     void Draw()
     {
-        UpdateDigits();
-        BlinkDigitSeparators();
+        if (m_state != STATE_DISPLAY_VALUE)
+        {
+            UpdateDigitsFromRTC();
+        }
+
+        m_digitMgr.Draw();
         m_leds.show();
     }
 
@@ -141,5 +181,11 @@ class Clock
             m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_3, blinkColor);
             m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_4, blinkColor);
         }
+    }
+
+  private:
+    int ElapsedMsSinceDisplayModeStarted()
+    {
+        return (int)millis() - m_millisSinceDisplayValueEntered;
     }
 };

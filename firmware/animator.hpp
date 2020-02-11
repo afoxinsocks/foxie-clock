@@ -11,6 +11,7 @@ enum AnimationType_e
     ANIM_CYCLE_FLOW_LEFT,
 
     // Add new types above here
+    ANIM_TOTAL,
     ANIM_SET_TIME,
 };
 
