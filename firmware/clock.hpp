@@ -37,7 +37,7 @@ class Clock
   public:
     Clock(Adafruit_NeoPixel &leds, ClockState_e &state) : m_leds(leds), m_digitMgr(leds), m_state(state)
     {
-        RedrawIfNeeded(true);
+        Draw();
     }
 
     void UseAnimation(const AnimationType_e type)
@@ -48,7 +48,7 @@ class Clock
     void ColorButtonPressed()
     {
         m_animator->ColorButtonPressed();
-        RedrawIfNeeded(true);
+        Draw();
     }
 
     void ChangeDigitType()
@@ -89,30 +89,31 @@ class Clock
         m_digitMgr.Draw();
     }
 
-    void RedrawIfNeeded(bool force = false)
+    void Check()
     {
         if (m_state == STATE_NORMAL)
         {
             rtc_hal_update();
         }
 
-        if (m_state != STATE_NORMAL || (m_animator && m_animator->IsFast()))
-        {
-            force = true;
-        }
-
-        if (rtc_hal_second() != m_lastRedrawTime || force)
+        bool update = false;
+        if (rtc_hal_second() != m_lastRedrawTime)
         {
             m_lastRedrawTime = rtc_hal_second();
-            UpdateDigits();
-
-            if (Settings::Get(SETTING_BLINKING_SEPARATORS))
-            {
-                BlinkDigitSeparators();
-            }
-
-            m_leds.show();
+            update = true;
         }
+
+        if (update || m_animator && m_animator->IsFast())
+        {
+            Draw();
+        }
+    }
+
+    void Draw()
+    {
+        UpdateDigits();
+        BlinkDigitSeparators();
+        m_leds.show();
     }
 
     void BlinkDigitSeparators()

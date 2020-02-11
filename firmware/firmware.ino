@@ -95,6 +95,9 @@ void setup()
             {
                 clock.UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
                 clockState = STATE_NORMAL;
+
+                rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute(), rtc_hal_second());
+                clock.Draw();
             }
         }
         else if (evt == Button::RELEASE && btnSetTime.TimePressed() > HOLD_SET_TIME_BTN_DELAY)
@@ -104,14 +107,14 @@ void setup()
             btnMinute.SetEnabled(clockState == STATE_SET_TIME);
         }
 
-        clock.RedrawIfNeeded(true);
+        clock.Draw();
     });
 
     btnHour.SetHandlerFunc([&](const Button::Event_e evt) {
         if (evt == Button::RELEASE)
         {
             rtc_hal_setTime(rtc_hal_hour() + 1, rtc_hal_minute(), rtc_hal_second());
-            clock.RedrawIfNeeded(true);
+            clock.Draw();
         }
     });
 
@@ -119,7 +122,7 @@ void setup()
         if (evt == Button::RELEASE || evt == Button::REPEAT)
         {
             rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
-            clock.RedrawIfNeeded(true);
+            clock.Draw();
         }
     });
 
@@ -158,7 +161,7 @@ void setup()
     {
         BluetoothProcessing();
 
-        clock.RedrawIfNeeded();
+        clock.Check();
 
         btnSetTime.Check();
         btnHour.Check();

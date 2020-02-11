@@ -70,7 +70,7 @@ class CmdHandler
             break;
             }
 
-            m_clock.RedrawIfNeeded(true);
+            m_clock.Draw();
             m_state = STATE_WAIT;
             m_rx.clear();
         }
