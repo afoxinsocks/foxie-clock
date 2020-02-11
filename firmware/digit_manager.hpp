@@ -64,6 +64,11 @@ class DigitManager
         m_digits[digitNum]->SetColor(color);
     }
 
+    int GetDigitColor(const size_t digitNum)
+    {
+        return m_digits[digitNum]->GetColor();
+    }
+
   private:
     std::shared_ptr<Digit> CreateDigit(const LEDNumbers_e firstLED)
     {

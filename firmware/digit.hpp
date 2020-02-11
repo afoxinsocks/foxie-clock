@@ -41,12 +41,12 @@ class Digit
 
   protected:
     Adafruit_NeoPixel &leds;
-    int first;
-    int color;
+    int m_first;
+    int m_color;
 
   public:
     Digit(Adafruit_NeoPixel &strip, const int firstLED, const int onColor)
-        : leds(strip), first(firstLED), color(onColor)
+        : leds(strip), m_first(firstLED), m_color(onColor)
     {
     }
 
@@ -56,13 +56,18 @@ class Digit
     {
         for (int i = 0; i < LEDS_PER_DIGIT; ++i)
         {
-            leds.setPixelColor(first + i, OFF_COLOR);
+            leds.setPixelColor(m_first + i, OFF_COLOR);
         }
     }
 
     void SetColor(const int newColor)
     {
-        color = newColor;
+        m_color = newColor;
+    }
+
+    int GetColor()
+    {
+        return m_color;
     }
 };
 
@@ -79,8 +84,8 @@ class EdgeLitDigit : public Digit
         if (num >= 0 && num <= 9)
         {
             const int row = 10 - num;
-            leds.setPixelColor(first + (row * 2) - 2, color);
-            leds.setPixelColor(first + (row * 2) - 1, color);
+            leds.setPixelColor(m_first + (row * 2) - 2, m_color);
+            leds.setPixelColor(m_first + (row * 2) - 1, m_color);
         }
     }
 };
@@ -99,8 +104,8 @@ class DisplayDigit : public Digit
             const uint8_t *data = NUMBERS + (num * LEDS_PER_DIGIT);
             for (int i = 0; i < LEDS_PER_DIGIT; ++i)
             {
-                const int col = (data[i] == 0 ? OFF_COLOR : color);
-                leds.setPixelColor(first + i, col);
+                const int col = (data[i] == 0 ? OFF_COLOR : m_color);
+                leds.setPixelColor(m_first + i, col);
             }
         }
         else

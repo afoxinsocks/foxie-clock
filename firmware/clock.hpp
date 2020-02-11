@@ -45,6 +45,12 @@ class Clock
         m_animator = AnimatorFactory(m_digitMgr, type);
     }
 
+    void ColorButtonPressed()
+    {
+        m_animator->ColorButtonPressed();
+        RedrawIfNeeded(true);
+    }
+
     void ChangeDigitType()
     {
         m_digitMgr.CreateDigitDisplay();

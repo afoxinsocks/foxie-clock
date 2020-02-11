@@ -46,8 +46,9 @@ void setup()
         Settings::Set(SETTING_COLOR, 192);
 
         Settings::Set(SETTING_ANIMATION_TYPE, ANIM_NONE);
-        // Settings::Set(SETTING_ANIMATION_TYPE, ANIM_CYCLE_COLORS);
         // Settings::Set(SETTING_ANIMATION_TYPE, ANIM_GLOW);
+        // Settings::Set(SETTING_ANIMATION_TYPE, ANIM_CYCLE_COLORS);
+        // Settings::Set(SETTING_ANIMATION_TYPE, ANIM_CYCLE_FLOW_LEFT);
 
         Settings::Set(SETTING_24_HOUR_MODE, 0);
 
@@ -74,7 +75,8 @@ void setup()
     btnHour.SetEnabled(false);
 
     Button btnMinute(PIN_BTN_MIN);
-    btnMinute.SetAllowRepeat(false);
+    btnMinute.SetAllowRepeat(true);
+    btnMinute.SetRepeatRate(100);
     btnMinute.SetEnabled(false);
 
     Button btnColor(PIN_BTN_COLOR);
@@ -114,7 +116,7 @@ void setup()
     });
 
     btnMinute.SetHandlerFunc([&](const Button::Event_e evt) {
-        if (evt == Button::RELEASE)
+        if (evt == Button::RELEASE || evt == Button::REPEAT)
         {
             rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
             clock.RedrawIfNeeded(true);
@@ -125,7 +127,7 @@ void setup()
         if (evt == Button::PRESS || evt == Button::REPEAT)
         {
             settings.Set(SETTING_COLOR, settings.Get(SETTING_COLOR) + 8);
-            clock.RedrawIfNeeded(true);
+            clock.ColorButtonPressed();
         }
         else if (evt == Button::RELEASE)
         {
