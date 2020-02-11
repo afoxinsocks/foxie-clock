@@ -106,11 +106,11 @@ class Clock
         m_digitMgr.numbers[4] = rtc_hal_second() / 10;
         m_digitMgr.numbers[5] = rtc_hal_second() % 10;
 
-        BlinkDigitSeparators();
-
         m_animator->Go();
 
         m_digitMgr.Draw();
+
+        BlinkDigitSeparators();
     }
 
     void Check()
@@ -151,8 +151,11 @@ class Clock
         {
             UpdateDigitsFromRTC();
         }
+        else
+        {
+            m_digitMgr.Draw();
+        }
 
-        m_digitMgr.Draw();
         m_leds.show();
     }
 
