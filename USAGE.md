@@ -14,7 +14,7 @@ Press the `B` button to set the brightness. There are 8 levels, and the current 
 The `C` button is typically used for changing the color of the digits, but its use depends on the animation mode the clock is currently using.
 
 ### Animation modes:
-Animation modes can be changed by pressing the `M` button while not in `Set Time` mode.
+Animation modes can be changed by pressing the `M` button while not in `Set Time` mode. The current animation mode number will be displayed after each button press.
 
 * ANIM_NONE (0): No animation, and pressing the `C` button will manually change the colors for all digits at once. The current color setting is saved when changed.
 * ANIM_GLOW (1): Similar to ANIM_NONE, except the digits briefly dim and glow every couple seconds. `C` button changes colors for all digits at once
