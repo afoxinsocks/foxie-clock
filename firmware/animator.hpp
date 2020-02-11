@@ -117,6 +117,7 @@ class AnimatorCycleFlowLeft : public Animator
     AnimatorCycleFlowLeft(DigitManager &digitMgr) : Animator(digitMgr)
     {
         prevNumbers = digitMgr.numbers;
+        Animator::Go();
     }
 
     virtual void Go() override
