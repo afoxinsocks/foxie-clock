@@ -18,6 +18,7 @@ class Button
     {
         DEBOUNCE_MS = 10,
         DEFAULT_REPEAT_RATE_MS = 250,
+        WAIT_BEFORE_REPEAT = 350,
     };
 
     using Func_t = std::function<void(const Event_e evt)>;
@@ -31,6 +32,7 @@ class Button
     int m_millisSinceDebounceStarted{0};
 
     bool m_pressed{false};
+    bool m_isRepeating{false};
     int m_millisAtPress{0};
     int m_millisSinceRepeat{0};
 
@@ -137,7 +139,7 @@ class Button
 
     void CheckForButtonRepeat()
     {
-        if (ElapsedMsSinceRepeat() > m_repeatRateMs && m_repeatAllowed)
+        if (m_repeatAllowed && TimePressed() > WAIT_BEFORE_REPEAT && ElapsedMsSinceRepeat() > m_repeatRateMs)
         {
             m_millisSinceRepeat = millis();
             SendEvent(REPEAT);
