@@ -9,7 +9,7 @@ Welcome to the Foxie Clock, a fully open-source RGB clock with nixie-like edge-l
 
 ## Looks
 
-With a look inspired by old nixie tubes and with capacitors protruding through the surface like vacuum tubes, the Foxie Clock is a fun, colorful way to display the time at your desk, office, or anywhere. Brightness, color, and time are all adjustable directly with 4 buttons on the back, with much more adjustability via an iOS/Android app using Bluetooth in the near future. [Using the clock is very easy](USAGE.md), with 4 buttons on the back providing various functionality for setting time, changing colors (*soon, animation modes!*), and brightness.
+With a look inspired by old nixie tubes and with capacitors protruding through the surface like vacuum tubes, the Foxie Clock is a fun, colorful way to display the time at your desk, office, or anywhere. Brightness, color, and time are all adjustable directly with 4 buttons on the back, with much more adjustability via an iOS/Android app using Bluetooth in the near future. [Using the clock is very easy](USAGE.md), with 4 buttons on the back providing various functionality for setting time, animation modes, colors, and brightness.
 
 ![Foxie Clock Case Render Image2](images/case_render2.png)
 
