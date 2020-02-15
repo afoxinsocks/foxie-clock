@@ -4,7 +4,7 @@
 
 Welcome to the Foxie Clock, a fully open-source RGB clock with nixie-like edge-lit acrylic digits. Or... an RGB pixel display clock, if you like!
 
-![Foxie Clock Image](images/clock.jpg)
+![Foxie Clock Image](images/clock_pro.jpg)
 ![Foxie Clock Pixel Display](images/pixel_display.jpg)
 
 ## Looks
