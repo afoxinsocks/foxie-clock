@@ -9,6 +9,18 @@
 #include "rtc_hal.hpp"
 #include "settings.hpp"
 
+#define UseDS3232
+
+#ifdef UseDS3232
+  #include <DS3231.h>
+  #include <Wire.h>
+  
+  DS3231 BackupClock;
+  bool h12;
+  bool PM;
+#endif
+
+
 Settings *Settings::m_inst = nullptr;
 CmdHandler *CmdHandler::m_inst = nullptr;
 
@@ -54,6 +66,11 @@ void setup()
 
         // Settings::Save(); // UNCOMMENT to save these settings into flash
     }
+
+    #ifdef UseDS3232
+      // Set time via wire to DS3231
+      rtc_hal_setTime( BackupClock.getHour(h12, PM),  BackupClock.getMinute(),  BackupClock.getSecond());
+    #endif
 
     Adafruit_NeoPixel leds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ400);
     leds.begin(); // initialize NeoPixel library
@@ -119,6 +136,12 @@ void setup()
         if (evt == Button::RELEASE)
         {
             rtc_hal_setTime(rtc_hal_hour() + 1, rtc_hal_minute(), rtc_hal_second());
+            #ifdef UseDS3232
+              // Set thte DS3231 to the current displayed time
+              BackupClock.setHour(rtc_hal_hour());
+              BackupClock.setMinute(rtc_hal_minute());
+              BackupClock.setSecond(rtc_hal_second());
+            #endif
             clock.Draw();
         }
     });
@@ -127,6 +150,12 @@ void setup()
         if (evt == Button::RELEASE || evt == Button::REPEAT)
         {
             rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
+            #ifdef UseDS3232
+              // Set thte DS3231 to the current displayed time
+              BackupClock.setHour(rtc_hal_hour());
+              BackupClock.setMinute(rtc_hal_minute());
+              BackupClock.setSecond(rtc_hal_second());
+            #endif
             clock.Draw();
         }
     });
