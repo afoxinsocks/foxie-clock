@@ -1,3 +1,4 @@
+#include <Wire.h>
 #include <vector>
 
 #include "Adafruit_NeoPixel.h"
@@ -29,6 +30,7 @@ enum HardwareConfig_e
 void setup()
 {
     Serial.begin(115200);
+    Wire.begin();
 
     Settings settings;
     if (false) // change to 'true' to allow the below code to change the settings on boot

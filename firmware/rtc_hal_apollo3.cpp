@@ -1,34 +1,27 @@
 #include "rtc_hal.hpp"
 #include <RTC.h>
 
-
-#define UseDS3232
+// Uncomment if using the backup clock modification
+// #define UseDS3232
 
 #ifdef UseDS3232
-  #include <DS3231.h>
-  #include <Wire.h>
-  
-  DS3231 BackupClock;
-  bool h12;
-  bool PM;
+#include <DS3231.h>
+#include <Wire.h>
+DS3231 BackupClock;
 #endif
-
 
 APM3_RTC g_rtc;
 void rtc_hal_init()
 {
     // force a specific time on boot if desired
     // rtc_hal_setTime() ...
-    
-       
+
+#ifdef UseDS3232
+    bool h12, PM;
+    rtc_hal_setTime(BackupClock.getHour(h12, PM), BackupClock.getMinute(), BackupClock.getSecond());
+#endif
+
     rtc_hal_update();
-
-    
-     #ifdef UseDS3232
-      Wire.begin();
-      rtc_hal_setTime(BackupClock.getHour(h12, PM), BackupClock.getMinute(), BackupClock.getSecond());
-    #endif
-
 }
 
 void rtc_hal_update()
@@ -65,15 +58,15 @@ void rtc_hal_setTime(int h, int m, int s)
     s = (s >= 60 ? 0 : s);
 
     g_rtc.setTime(h, m, s, 0, g_rtc.dayOfMonth, g_rtc.month, g_rtc.year);
-    
+
     rtc_hal_update();
 
-     #ifdef UseDS3232
-      // Set thte DS3231 to the current displayed time
-      BackupClock.setHour(rtc_hal_hour());
-      BackupClock.setMinute(rtc_hal_minute());
-      BackupClock.setSecond(rtc_hal_second());
-    #endif
+#ifdef UseDS3232
+    // Set the DS3231 to the current displayed time
+    BackupClock.setHour(h);
+    BackupClock.setMinute(m);
+    BackupClock.setSecond(s);
+#endif
 }
 
 void rtc_hal_setDate(int d, int m, int y)
