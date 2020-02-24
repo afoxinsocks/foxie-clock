@@ -28,7 +28,7 @@ enum HardwareConfig_e
 
 void setup()
 {
-    // Serial.begin(115200);
+    Serial.begin(115200);
 
     Settings settings;
     if (false) // change to 'true' to allow the below code to change the settings on boot
@@ -54,6 +54,8 @@ void setup()
 
         // Settings::Save(); // UNCOMMENT to save these settings into flash
     }
+
+    rtc_hal_init();
 
     Adafruit_NeoPixel leds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ400);
     leds.begin(); // initialize NeoPixel library
