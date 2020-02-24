@@ -18,11 +18,14 @@ void rtc_hal_init()
     // force a specific time on boot if desired
     // rtc_hal_setTime() ...
     
-    #ifdef UseDS3232
-
-    #endif
-    
+       
     rtc_hal_update();
+
+    
+     #ifdef UseDS3232
+      rtc_hal_setTime(BackupClock.getHour(h12, PM), BackupClock.getMinute(), BackupClock.getSecond());
+    #endif
+
 }
 
 void rtc_hal_update()
@@ -59,15 +62,15 @@ void rtc_hal_setTime(int h, int m, int s)
     s = (s >= 60 ? 0 : s);
 
     g_rtc.setTime(h, m, s, 0, g_rtc.dayOfMonth, g_rtc.month, g_rtc.year);
+    
+    rtc_hal_update();
 
-    #ifdef UseDS3232
+     #ifdef UseDS3232
       // Set thte DS3231 to the current displayed time
       BackupClock.setHour(rtc_hal_hour());
       BackupClock.setMinute(rtc_hal_minute());
       BackupClock.setSecond(rtc_hal_second());
     #endif
-    
-    rtc_hal_update();
 }
 
 void rtc_hal_setDate(int d, int m, int y)
