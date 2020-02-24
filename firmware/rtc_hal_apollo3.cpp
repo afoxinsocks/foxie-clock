@@ -1,5 +1,7 @@
 #include "rtc_hal.hpp"
 #include <RTC.h>
+
+
 #define UseDS3232
 
 #ifdef UseDS3232
@@ -23,6 +25,7 @@ void rtc_hal_init()
 
     
      #ifdef UseDS3232
+      Wire.begin();
       rtc_hal_setTime(BackupClock.getHour(h12, PM), BackupClock.getMinute(), BackupClock.getSecond());
     #endif
 

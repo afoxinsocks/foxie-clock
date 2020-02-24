@@ -28,7 +28,7 @@ enum HardwareConfig_e
 
 void setup()
 {
-    // Serial.begin(115200);
+    Serial.begin(115200);
 
     Settings settings;
     if (false) // change to 'true' to allow the below code to change the settings on boot
