@@ -55,7 +55,7 @@ Insert a full row of digits, starting with the far right (6th row), making sure 
 
 ## Step 5
 
-Take the 3 digit separators, inspect it for any loose strings and remove them with the tweezers. Insert one of the digit separators at the base of the row you just completed, and push it tightly into the digits. The separators have a very tight fit and are intended to keep the digits standing as straight as possible.
+Take the 3 digit separators, inspect them for any loose strings (remove any using the tweezers). Insert one of the digit separators at the base of the row you just completed, and push it tightly into the digits. The separators should have a fairly tight fit and are intended to keep the digits standing as vertically as possible.
 
 **Note:** The digits may not stand completely straight yet -- once the next row of digits is inserted, doing so will cause the "teeth" on this row to tighten up and force the digits to be more straight. 
 
