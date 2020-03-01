@@ -9,7 +9,7 @@ For digit assembly, the **most important** thing to remember is to keep the digi
 fingerprints on them, it becomes difficult to see the numbers through several layers. They can be carefully
 cleaned with lens wipes. All kits include 2 nitrile gloves (non-powder, non-latex) to assist with assembly.
 
-You'll need the fully assembled Foxie Clock board, a 2mm hex wrench, and finally, sharp tweezers are extremely helpful. 
+You'll need the fully assembled Foxie Clock board, a 2mm hex wrench, a utility knife or Xacto knife, and finally, sharp tweezers are extremely helpful. 
 
 ![Assembly tools](/images/assembly_tools.jpg)
 
@@ -26,9 +26,9 @@ It's tempting to start putting digits into the lid right away as you remove the 
 
 ## Step 2
 
-Pick up a digit, and get comfortable. It is easiest to **carefully** scrape near the corner of one of the bottom tabs to get the protective paper to start peeling up. If you scratch the tab with the tweezers, it is OK! The tabs will be below the surface of the lid after assembly and the scratches will not be visible.
+Pick up a digit, and get comfortable. I find that using a utilty or Xacto knife to lift the paper at the edge is pretty easy, and it doesn't tend to scratch the tab.  It is easiest to **carefully** scrape near the corner of one of the bottom tabs to get the protective paper to start peeling up. If you scratch the tab, it is OK! The tabs will be below the surface of the lid after assembly and the scratches will not be visible.
 
-The protective paper on the 9 and 6 (and sometimes the 4) will usually come off in one piece. The 8 and 0 will require *very carefully* picking up the edge of the protective paper in those areas and peeling it off.  I'm sorry. Really.
+The protective paper on the 9 and 6 (and sometimes the 4) will usually come off in one piece. The 8 and 0 will require *very carefully* picking up the edge of the protective paper in those areas and peeling it off.  Use a fingernail to scrape the edge of the paper to lift a small amount, then use the tweezers to remove it.
 
 ![](/images/digits_step2a.jpg)
 ![](/images/digits_step2b.jpg)
