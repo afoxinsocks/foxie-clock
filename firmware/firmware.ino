@@ -139,7 +139,7 @@ void setup()
         if (evt == Button::RELEASE)
         {
             settings.Set(SETTING_ANIMATION_TYPE, settings.Get(SETTING_ANIMATION_TYPE) + 1);
-            if (settings.Get(SETTING_ANIMATION_TYPE) == ANIM_TOTAL)
+            if (settings.Get(SETTING_ANIMATION_TYPE) >= ANIM_TOTAL)
             {
                 settings.Set(SETTING_ANIMATION_TYPE, ANIM_NONE);
             }
@@ -171,8 +171,7 @@ void setup()
             {
                 settings.Set(SETTING_CUR_BRIGHTNESS, settings.Get(SETTING_MIN_BRIGHTNESS));
             }
-            leds.setBrightness(settings.Get(SETTING_CUR_BRIGHTNESS));
-            leds.show();
+            clock.SetBrightness();
         }
         else if (evt == Button::RELEASE)
         {
