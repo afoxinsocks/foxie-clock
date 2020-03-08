@@ -57,7 +57,14 @@ class Clock
 
     void ChangeDigitType()
     {
+        TurnOffBlinkers();
         m_digitMgr.CreateDigitDisplay();
+    }
+
+    void SetBrightness()
+    {
+        m_leds.setBrightness(Settings::Get(SETTING_CUR_BRIGHTNESS));
+        m_leds.show();
     }
 
     void DisplayValue(unsigned int value)
@@ -161,13 +168,8 @@ class Clock
 
     void BlinkDigitSeparators()
     {
-        if (Settings::Get(SETTING_BLINKING_SEPARATORS) != 1)
-        {
-            return;
-        }
-
         int blinkColor = ColorWheel(Settings::Get(SETTING_COLOR));
-        if (rtc_hal_second() % 2 != 0)
+        if (rtc_hal_second() % 2 != 0 || Settings::Get(SETTING_BLINKING_SEPARATORS) == 0)
         {
             blinkColor = 0;
         }
@@ -184,6 +186,16 @@ class Clock
             m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_3, blinkColor);
             m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_4, blinkColor);
         }
+    }
+
+    void TurnOffBlinkers()
+    {
+        m_leds.setPixelColor(BLINK_DIGIT_TYPE_1_LED_1, 0);
+        m_leds.setPixelColor(BLINK_DIGIT_TYPE_1_LED_2, 0);
+        m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_1, 0);
+        m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_2, 0);
+        m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_3, 0);
+        m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_4, 0);
     }
 
   private:
