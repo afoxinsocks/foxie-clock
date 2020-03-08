@@ -23,6 +23,7 @@ class CmdHandler
     Clock &m_clock;
     State_e m_state{STATE_WAIT};
     uint8_t m_expectingBytes{0};
+    int32_t m_lastByteRxTime{0};
 
   public:
     CmdHandler(Clock &clock) : m_clock(clock)
@@ -32,6 +33,14 @@ class CmdHandler
 
     void Process()
     {
+        if ((int32_t)millis() - m_lastByteRxTime > 1000)
+        {
+            m_state = STATE_WAIT;
+            m_rx.clear();
+        }
+
+        m_lastByteRxTime = millis();
+
         if (m_state == STATE_WAIT)
         {
             // size of payload received
@@ -62,9 +71,18 @@ class CmdHandler
                 {
                     m_clock.ChangeDigitType();
                 }
+                else if (setting == SETTING_CUR_BRIGHTNESS)
+                {
+                    m_clock.SetBrightness();
+                }
                 else if (setting == SETTING_ANIMATION_TYPE)
                 {
                     m_clock.UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
+                }
+
+                if (setting == SETTING_DIGIT_TYPE || setting == SETTING_COLOR || setting == SETTING_CUR_BRIGHTNESS)
+                {
+                    Settings::Save();
                 }
             }
             break;
