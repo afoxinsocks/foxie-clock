@@ -16,10 +16,11 @@ So it's time to update the firmware, for the first time, for the last time. Hope
 8. Select `Tools->Board->SparkFun RedBoard Artemis Nano`
 9. Make sure your Foxie Clock is plugged into your computer with a USB-C cable.
 10. Select `Tools->Port` in Arduino and choose the correct port for your Foxie Clock. 
+   On **most** platforms, this will have "wch" at the beginning of the serial port name.
    If there is more than one available port, you can unplug the clock, open `Tools->Port` to see what is there,
    then plug in the clock again and select the newly available port. 
    
-   Note: On some operating systems (such as macOS), you'll need to install CH340 drivers for the board support
+   Note: On some operating systems (such as macOS), you'll need to install WCH's CH340 (_not CH340SER_) drivers for the board support
    to detect the correct serial port. 
    See [SparkFun's How to Install CH340 Drivers](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers)
    for more information.
