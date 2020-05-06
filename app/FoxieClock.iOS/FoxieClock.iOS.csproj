@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{E6E2119E-8875-4D46-86D3-F0C880351D82}</ProjectGuid>
+    <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TemplateGuid>{6143fdea-f3c2-4a09-aafa-6e230626515e}</TemplateGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>FoxieClock.iOS</RootNamespace>
+    <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <AssemblyName>FoxieClock.iOS</AssemblyName>
+    <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
+    <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchArch>x86_64</MtouchArch>
+    <MtouchLink>None</MtouchLink>
+    <MtouchDebug>true</MtouchDebug>
+    <CodesignProvision>VS: WildCard Development</CodesignProvision>
+    <CodesignKey>Apple Development: Alex Fox (Q7AW8R4578)</CodesignKey>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchLink>SdkOnly</MtouchLink>
+    <MtouchArch>x86_64</MtouchArch>
+    <CodesignKey>Apple Development: Alex Fox (Q7AW8R4578)</CodesignKey>
+    <CodesignProvision>VS: WildCard Development</CodesignProvision>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhone\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchArch>ARM64</MtouchArch>
+    <CodesignKey>Apple Development: Alex Fox (Q7AW8R4578)</CodesignKey>
+    <MtouchDebug>true</MtouchDebug>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchLink>None</MtouchLink>
+    <MtouchInterpreter>-all</MtouchInterpreter>
+    <CodesignProvision>VS: WildCard Development</CodesignProvision>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchArch>ARM64</MtouchArch>
+    <CodesignKey>iPhone Distribution</CodesignKey>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchLink>SdkOnly</MtouchLink>
+    <MtouchUseLlvm>true</MtouchUseLlvm>
+<MtouchSdkVersion>13.4</MtouchSdkVersion>
+<MtouchExtraArgs>--optimize=experimental-xforms-product-type</MtouchExtraArgs>
+<CodesignProvision>Automatic:AppStore</CodesignProvision>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Main.cs" />
+    <Compile Include="AppDelegate.cs" />
+    <None Include="Entitlements.plist" />
+    <None Include="Info.plist" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ImageAsset Include="Assets.xcassets\Foxie.imageset\Contents.json" />
+    <ImageAsset Include="Assets.xcassets\Foxie.imageset\foxie_icon.png" />
+    <ImageAsset Include="Assets.xcassets\FoxieClockBig.imageset\Contents.json" />
+    <ImageAsset Include="Assets.xcassets\FoxieClockBig.imageset\Foxie-A_Cropped.png" />
+    <ImageAsset Include="Assets.xcassets\FoxieBackSmall.imageset\Contents.json" />
+    <ImageAsset Include="Assets.xcassets\FoxieBackSmall.imageset\foxie_back_small.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon58.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon87.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon60.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon40.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon180.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon120.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon120-1.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon80.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon58-1.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon29.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon40-1.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon20.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon167.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon152.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon76.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon80-1.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon40-2.png" />
+    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon1024.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="Xamarin.iOS" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.Forms" Version="4.6.0.726" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.3.1" />
+    <PackageReference Include="Plugin.BLE">
+      <Version>2.1.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets.xcassets\foxie.imageset\" />
+    <Folder Include="Assets.xcassets\Foxie.imageset\" />
+    <Folder Include="Resources\" />
+    <Folder Include="Assets.xcassets\Foxie.imageset\" />
+    <Folder Include="Assets.xcassets\FoxieClockBig.imageset\" />
+    <Folder Include="Assets.xcassets\FoxieBackSmall.imageset\" />
+    <Folder Include="Assets.xcassets\AppIcon-old.appiconset\" />
+    <Folder Include="Assets.xcassets\AppIcon.appiconset\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
+  <Import Project="..\FoxieClock\FoxieClock.projitems" Label="Shared" />
+</Project>
