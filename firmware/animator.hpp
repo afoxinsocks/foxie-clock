@@ -9,6 +9,7 @@ enum AnimationType_e
     ANIM_GLOW,
     ANIM_CYCLE_COLORS,
     ANIM_CYCLE_FLOW_LEFT,
+    ANIM_RAINBOW,
 
     // Add new types above here
     ANIM_TOTAL,
@@ -161,6 +162,52 @@ class AnimatorCycleFlowLeft : public Animator
     }
 };
 
+class AnimatorRainbow : public Animator
+{
+    using Animator::Animator;
+
+  private:
+    int m_millis{0};
+    bool m_paused{false};
+    float m_colors[6] = {0, 12, 24, 36, 48, 60};
+
+  public:
+    virtual void Go() override
+    {
+        if (m_paused)
+        {
+            return;
+        }
+
+        if ((int)millis() - m_millis >= 50)
+        {
+            m_millis = millis();
+
+            for (int i = 5; i >= 0; --i)
+            {
+                m_colors[i] += 1.5;
+
+                if (m_colors[i] > 255.0f)
+                {
+                    m_colors[i] -= 255.0f;
+                }
+
+                m_digitMgr.SetDigitColor(i, ColorWheel(m_colors[i]));
+            }
+        }
+    }
+
+    virtual void ColorButtonPressed() override
+    {
+        m_paused = !m_paused;
+    }
+
+    virtual bool IsFast()
+    {
+        return true;
+    }
+};
+
 class AnimatorSetTime : public Animator
 {
     using Animator::Animator;
@@ -185,6 +232,8 @@ static inline std::shared_ptr<Animator> AnimatorFactory(DigitManager &digitMgr, 
         return std::make_shared<AnimatorCycleAll>(digitMgr);
     case ANIM_CYCLE_FLOW_LEFT:
         return std::make_shared<AnimatorCycleFlowLeft>(digitMgr);
+    case ANIM_RAINBOW:
+        return std::make_shared<AnimatorRainbow>(digitMgr);
     case ANIM_SET_TIME:
         return std::make_shared<AnimatorSetTime>(digitMgr);
     }
