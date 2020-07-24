@@ -56,9 +56,6 @@ extern "C" void set_adv_name(const char *str);
 
 void BluetoothInit()
 {
-    // wait a bit for the BT hardware to be ready
-    delay(400);
-
     set_adv_name(BLE_PERIPHERAL_NAME);
 
     HciDrvRadioBoot(0);

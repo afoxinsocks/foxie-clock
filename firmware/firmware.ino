@@ -63,8 +63,6 @@ void setup()
     leds.begin(); // initialize NeoPixel library
     leds.setBrightness(settings.Get(SETTING_CUR_BRIGHTNESS));
 
-    BluetoothInit();
-
     ClockState_e clockState{STATE_NORMAL};
     Clock clock(leds, clockState);
 
@@ -180,9 +178,19 @@ void setup()
     });
 
     // this loop is used instead of loop(), so we can use our local variables
+    bool initializedBluetooth = false;
     while (true)
     {
-        BluetoothProcessing();
+        if (!initializedBluetooth && millis() > 500)
+        {
+            BluetoothInit();
+            initializedBluetooth = true;
+        }
+
+        if (initializedBluetooth)
+        {
+            BluetoothProcessing();
+        }
 
         clock.Check();
 
