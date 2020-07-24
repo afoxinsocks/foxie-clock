@@ -76,7 +76,9 @@ class Settings
     {
         // for Artemis, we're going to write the entire block at once
         // to save write cycles
-        writeBlockToEEPROM(0, (const uint8_t *)m_inst->m_storage, SETTINGS_SIZE * sizeof(uint32_t));
+        const size_t blockSize = SETTINGS_SIZE * sizeof(uint32_t);
+        const size_t maxAllowedSize = blockSize;
+        writeBlockToEEPROM(0, (const uint8_t *)m_inst->m_storage, blockSize, maxAllowedSize);
     }
 
     static uint32_t Get(const SettingNames_e name)
