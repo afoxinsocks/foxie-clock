@@ -7,6 +7,7 @@
 #include "clock.hpp"
 #include "cmd_handler.hpp"
 #include "digit_manager.hpp"
+#include "flippable_led_strip.hpp"
 #include "rtc_hal.hpp"
 #include "settings.hpp"
 
@@ -52,14 +53,17 @@ void setup()
         // Settings::Set(SETTING_ANIMATION_TYPE, ANIM_CYCLE_COLORS);
         // Settings::Set(SETTING_ANIMATION_TYPE, ANIM_CYCLE_FLOW_LEFT);
 
-        Settings::Set(SETTING_24_HOUR_MODE, 0);
+        // Settings::Set(SETTING_24_HOUR_MODE, 1);
+
+        // Settings::Set(SETTING_FLIP_DISPLAY, 1);
 
         // Settings::Save(); // UNCOMMENT to save these settings into flash
     }
 
     rtc_hal_init();
 
-    Adafruit_NeoPixel leds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ400);
+    FlippableLEDStrip leds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ400);
+
     leds.begin(); // initialize NeoPixel library
     leds.setBrightness(settings.Get(SETTING_CUR_BRIGHTNESS));
 

@@ -14,6 +14,7 @@ enum SettingNames_e
     SETTING_COLOR,
     SETTING_ANIMATION_TYPE,
     SETTING_24_HOUR_MODE,
+    SETTING_FLIP_DISPLAY,
 
     // Add new settings here
 
@@ -67,6 +68,7 @@ class Settings
         Set(SETTING_COLOR, 192);
         Set(SETTING_ANIMATION_TYPE, 1);
         Set(SETTING_24_HOUR_MODE, 0);
+        Set(SETTING_FLIP_DISPLAY, 0);
 
         Save();
     }
