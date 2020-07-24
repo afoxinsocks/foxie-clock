@@ -80,7 +80,8 @@ class CmdHandler
                     m_clock.UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
                 }
 
-                if (setting == SETTING_DIGIT_TYPE || setting == SETTING_COLOR || setting == SETTING_CUR_BRIGHTNESS)
+                if (setting == SETTING_DIGIT_TYPE || setting == SETTING_COLOR || setting == SETTING_CUR_BRIGHTNESS ||
+                    setting == SETTING_ANIMATION_TYPE)
                 {
                     Settings::Save();
                 }
