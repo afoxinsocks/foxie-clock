@@ -153,7 +153,7 @@ void setup()
     btnColor.SetHandlerFunc([&](const Button::Event_e evt) {
         if (evt == Button::PRESS || evt == Button::REPEAT)
         {
-            settings.Set(SETTING_COLOR, settings.Get(SETTING_COLOR) + 8);
+            settings.Set(SETTING_COLOR, (settings.Get(SETTING_COLOR) + 8) & 0xFF);
             clock.ColorButtonPressed();
         }
         else if (evt == Button::RELEASE)
