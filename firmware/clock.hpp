@@ -69,6 +69,8 @@ class Clock
 
     void DisplayValue(unsigned int value)
     {
+        Settings::Set(SETTING_TRANSITION_TYPE, 0);
+
         m_state = STATE_DISPLAY_VALUE;
         m_millisSinceDisplayValueEntered = millis();
         UseAnimation(ANIM_NONE);
@@ -122,34 +124,20 @@ class Clock
 
     void Check()
     {
-        bool update = false;
-
         if (m_state == STATE_DISPLAY_VALUE && ElapsedMsSinceDisplayModeStarted() >= 1000)
         {
             m_state = STATE_NORMAL;
             UseAnimation((AnimationType_e)Settings::Get(SETTING_ANIMATION_TYPE));
+
+            Settings::Set(SETTING_TRANSITION_TYPE, 1);
         }
 
         if (m_state == STATE_NORMAL)
         {
             rtc_hal_update();
         }
-        else
-        {
-            // whenever not in normal mode, always update
-            update = true;
-        }
 
-        if (rtc_hal_second() != m_lastRedrawTime)
-        {
-            update = true;
-        }
-
-        if (update || m_animator->IsFast())
-        {
-            m_lastRedrawTime = rtc_hal_second();
-            Draw();
-        }
+        Draw();
     }
 
     void Draw()

@@ -25,6 +25,11 @@ class DigitManager
         NUM_DIGITS = 6,
     };
 
+    enum
+    {
+        FADE_TIME_MS = 600,
+    };
+
     Adafruit_NeoPixel &m_leds;
     // shared pointers used so that destructing automatically deletes the digit
     std::vector<std::shared_ptr<Digit>> m_digits;
@@ -32,11 +37,13 @@ class DigitManager
   public:
     // these store the value of each physical number display on the PCB
     // and can be updated directly for ease of use
-    std::vector<uint8_t> numbers{0, 0, 0, 0, 0, 0};
+    std::vector<uint8_t> numbers{0, 0, 0, 0, 0, 0}, prevNumbers;
+    bool scalingNumbers[6] = {false};
 
     DigitManager(Adafruit_NeoPixel &leds) : m_leds(leds)
     {
         CreateDigitDisplay();
+        prevNumbers = numbers;
     }
 
     void CreateDigitDisplay()
@@ -55,7 +62,41 @@ class DigitManager
     {
         for (size_t i = 0; i < NUM_DIGITS; ++i)
         {
-            m_digits[i]->Draw(numbers[i]);
+            if (prevNumbers[i] != numbers[i])
+            {
+                scalingNumbers[i] = true;
+            }
+
+            if (IsFadeWindow() && scalingNumbers[i] && Settings::Get(SETTING_TRANSITION_TYPE) == 1)
+            {
+                const float halfFadeTime = FADE_TIME_MS / 2;
+
+                // first half of fade, just before the second has flipped over
+                float positionThroughFade = ((rtc_hal_millis() - (1000.0f - halfFadeTime)) / halfFadeTime) / 2;
+
+                if (rtc_hal_millis() < halfFadeTime)
+                {
+                    // halfway through, just after the second has flipped over
+                    positionThroughFade = 0.5f + ((rtc_hal_millis() / halfFadeTime) / 2);
+                }
+
+                m_digits[i]->SetBrightness(1.0f - positionThroughFade);
+                m_digits[i]->Draw(prevNumbers[i]);
+
+                m_digits[i]->SetBrightness(1.0f);
+                m_digits[i]->Draw(numbers[i], true);
+            }
+            else
+            {
+                m_digits[i]->SetBrightness(1.0f);
+                m_digits[i]->Draw(numbers[i]);
+                scalingNumbers[i] = false;
+            }
+        }
+
+        if (!IsFadeWindow())
+        {
+            prevNumbers = numbers;
         }
     }
 
@@ -70,6 +111,21 @@ class DigitManager
     }
 
   private:
+    bool IsFadeWindow()
+    {
+        return rtc_hal_millis() < (FADE_TIME_MS / 2) || rtc_hal_millis() > (1000 - (FADE_TIME_MS / 2));
+    }
+
+    bool IsLastSecondOfMinute()
+    {
+        return rtc_hal_second() == 59;
+    }
+
+    bool IsLastSecondOfHour()
+    {
+        return rtc_hal_minute() == 59 && rtc_hal_second() == 59;
+    }
+
     std::shared_ptr<Digit> CreateDigit(const LEDNumbers_e firstLED)
     {
         if (Settings::Get(SETTING_DIGIT_TYPE) == 1)

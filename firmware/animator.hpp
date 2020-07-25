@@ -20,10 +20,12 @@ class Animator
 {
   protected:
     DigitManager &m_digitMgr;
+    int m_lastSecond;
 
   public:
     Animator(DigitManager &digitMgr) : m_digitMgr(digitMgr)
     {
+        m_lastSecond = rtc_hal_second();
     }
 
     virtual void Go()
@@ -34,13 +36,6 @@ class Animator
             m_digitMgr.SetDigitColor(i, ColorWheel(Settings::Get(SETTING_COLOR)));
         }
     };
-
-    // Fast animations occur as often as possible (like AnimatorGlow below),
-    // while non-fast animations occur once a second.
-    virtual bool IsFast()
-    {
-        return false;
-    }
 
     // an animator can choose to do something special when the color button
     // is pressed
@@ -59,10 +54,15 @@ class AnimatorCycleAll : public Animator
   public:
     virtual void Go() override
     {
-        for (int i = 0; i < 6; ++i)
+        if (m_lastSecond != rtc_hal_second())
         {
-            m_color += 16;
-            m_digitMgr.SetDigitColor(i, ColorWheel(m_color));
+            for (int i = 0; i < 6; ++i)
+            {
+
+                m_color += 16;
+                m_digitMgr.SetDigitColor(i, ColorWheel(m_color));
+            }
+            m_lastSecond = rtc_hal_second();
         }
     }
 };
@@ -102,23 +102,15 @@ class AnimatorGlow : public Animator
             }
         }
     }
-
-    virtual bool IsFast()
-    {
-        return true;
-    }
 };
 
 // Changes one digit color at a time, flowing to the left.
 class AnimatorCycleFlowLeft : public Animator
 {
-  private:
-    std::vector<uint8_t> prevNumbers;
-
   public:
     AnimatorCycleFlowLeft(DigitManager &digitMgr) : Animator(digitMgr)
     {
-        prevNumbers = digitMgr.numbers;
+        m_lastSecond = rtc_hal_second();
         Animator::Go();
     }
 
@@ -126,19 +118,18 @@ class AnimatorCycleFlowLeft : public Animator
     {
         for (int i = 0; i < 6; ++i)
         {
-            if (prevNumbers[i] != m_digitMgr.numbers[i])
+            if (m_lastSecond != rtc_hal_second() && m_digitMgr.prevNumbers[i] != m_digitMgr.numbers[i])
             {
                 CycleDigitColor(i);
+                m_lastSecond = rtc_hal_second();
             }
         }
-
-        prevNumbers = m_digitMgr.numbers;
     }
 
     virtual void ColorButtonPressed() override
     {
         // invalidate previous numbers
-        for (auto &prev : prevNumbers)
+        for (auto &prev : m_digitMgr.prevNumbers)
         {
             prev = Digit::INVALID;
         }
@@ -167,7 +158,6 @@ class AnimatorRainbow : public Animator
     using Animator::Animator;
 
   private:
-    int m_millis{0};
     bool m_paused{false};
     float m_colors[6] = {0, 12, 24, 36, 48, 60};
 
@@ -179,32 +169,22 @@ class AnimatorRainbow : public Animator
             return;
         }
 
-        if ((int)millis() - m_millis >= 50)
+        for (int i = 5; i >= 0; --i)
         {
-            m_millis = millis();
+            m_colors[i] += 0.1f;
 
-            for (int i = 5; i >= 0; --i)
+            if (m_colors[i] > 255.0f)
             {
-                m_colors[i] += 1.5;
-
-                if (m_colors[i] > 255.0f)
-                {
-                    m_colors[i] -= 255.0f;
-                }
-
-                m_digitMgr.SetDigitColor(i, ColorWheel(m_colors[i]));
+                m_colors[i] -= 255.0f;
             }
+
+            m_digitMgr.SetDigitColor(i, ColorWheel(m_colors[i]));
         }
     }
 
     virtual void ColorButtonPressed() override
     {
         m_paused = !m_paused;
-    }
-
-    virtual bool IsFast()
-    {
-        return true;
     }
 };
 

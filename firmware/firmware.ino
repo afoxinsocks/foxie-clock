@@ -56,9 +56,13 @@ void setup()
         // Settings::Set(SETTING_24_HOUR_MODE, 1);
 
         // Settings::Set(SETTING_FLIP_DISPLAY, 1);
+        // Settings::Set(SETTING_TRANSITION_TYPE, 1);
 
         // Settings::Save(); // UNCOMMENT to save these settings into flash
     }
+
+    // temporarily force fade transitions always on (set to 0 to disable)
+    Settings::Set(SETTING_TRANSITION_TYPE, 1);
 
     rtc_hal_init();
 
