@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Adafruit_Neopixel.h"
+#include "Adafruit_NeoPixel.h"
 #include "settings.hpp"
 
 class FlippableLEDStrip : public Adafruit_NeoPixel
