@@ -50,6 +50,16 @@ int rtc_hal_second()
     return g_rtc.seconds;
 }
 
+int rtc_hal_hundredths()
+{
+    return g_rtc.hundredths;
+}
+
+int rtc_hal_millis()
+{
+    return g_rtc.hundredths * 10;
+}
+
 void rtc_hal_setTime(int h, int m, int s)
 {
     // clamp inputs
