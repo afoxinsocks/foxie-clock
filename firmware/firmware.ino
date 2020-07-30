@@ -41,7 +41,7 @@ void setup()
         // can control any of these settings and this section will be removed once
         // the mobile app launches.
 
-        Settings::Set(SETTING_DIGIT_TYPE, 1); // 1 is edge lit (acrylics), 2 is pixel display
+        Settings::Set(SETTING_DIGIT_TYPE, DT_EDGE_LIT);
         Settings::Set(SETTING_CUR_BRIGHTNESS, 128);
         Settings::Set(SETTING_MIN_BRIGHTNESS, 4);
         Settings::Set(SETTING_MAX_BRIGHTNESS, 255);

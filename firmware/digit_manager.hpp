@@ -83,7 +83,15 @@ class DigitManager
                 m_digits[i]->SetBrightness(1.0f - positionThroughFade);
                 m_digits[i]->Draw(prevNumbers[i]);
 
-                m_digits[i]->SetBrightness(1.0f);
+                bool fadeNewDigit = Settings::Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT;
+
+                if (!fadeNewDigit)
+                {
+                    positionThroughFade = 1.0f;
+                }
+
+                m_digits[i]->SetBrightness(positionThroughFade);
+
                 m_digits[i]->Draw(numbers[i], true);
             }
             else

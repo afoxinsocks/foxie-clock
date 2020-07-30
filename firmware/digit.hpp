@@ -4,6 +4,13 @@
 
 // returns a color transitioning from r -> g -> b and back to r
 // lightly modified from Adafruit NeoPixel strand test
+
+enum DigitTypes_e
+{
+    DT_EDGE_LIT = 1,
+    DT_PIXELS = 2,
+};
+
 static inline uint32_t ColorWheel(uint8_t pos)
 {
     pos = 255 - pos;
