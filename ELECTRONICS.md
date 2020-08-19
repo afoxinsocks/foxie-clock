@@ -122,6 +122,7 @@ You can now put the lid on top of the PCB and insert the 4 bolts, if desired. Ma
 
 ## Step 14
 
-[Use Arduino to program the firmware onto your Foxie Clock](INSTALLING.md)
+Firmware isn't yet programmed onto the RedBoard, [so let's take care of that now.](INSTALLING.md).
 
-[Continue onto the rest of the assembly](ASSEMBLY.md)
+## Step 15
+[Continue onto final assembly](ASSEMBLY.md)
