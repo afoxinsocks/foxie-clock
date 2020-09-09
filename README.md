@@ -13,9 +13,9 @@ With a look inspired by old nixie tubes and with capacitors protruding through t
 
 ![Foxie Clock Case Render Image2](images/case_render2.png)
 
-# [Get your own](https://www.tindie.com/products/afoxinsocks/foxie-clock/)
+# [Get your own](https://www.foxieproducts.com/)
 
-Head [over to the Tindie Store](https://www.tindie.com/products/afoxinsocks/foxie-clock/) to order your own Foxie Clock kit.
+Head [over to Foxie Products](https://www.foxieproducts.com/) to order your own Foxie Clock kit.
 
 
 ## 3D Print your own case or modify it yourself!
