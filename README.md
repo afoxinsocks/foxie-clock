@@ -37,7 +37,7 @@ The circuit board can be ordered fully soldered, or if you like, you can solder 
 
 ## Easy to hack
 
-The Foxie Clock is powered by a SparkFun RedBoard Artemis Nano (https://www.sparkfun.com/products/15443), an extremely cool, fully Arduino-compatible board that supports Bluetooth LE 5.0 and much, much more. It is included in every Foxie Clock kit, along with everything you need (except a USB-C cable) to get running.
+The Foxie Clock is powered by a SparkFun RedBoard Artemis Nano (https://www.sparkfun.com/products/15443), an extremely cool, fully Arduino-compatible board that supports Bluetooth LE 5.0 and much, much more. It is included in every Foxie Clock kit, along with everything you need (including USB-C cable) to get running.
 
 ## Fully Open Source
 
