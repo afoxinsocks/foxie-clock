@@ -96,6 +96,8 @@ void setup()
     Button btnColor(PIN_BTN_COLOR);
     Button btnBrightness(PIN_BTN_BRIGHTNESS);
 
+    bool sleepMode = false;
+
     btnSetTime.SetHandlerFunc([&](const Button::Event_e evt) {
         if (evt == Button::REPEAT)
         {
@@ -188,6 +190,12 @@ void setup()
     btnBrightness.SetHandlerFunc([&](const Button::Event_e evt) {
         if (evt == Button::PRESS || evt == Button::REPEAT)
         {
+            if (btnSetAnimationMode.IsPressed())
+            {
+                btnSetAnimationMode.DisableEventsUntilRelease();
+                return;
+            }
+
             const uint8_t step = settings.Get(SETTING_MAX_BRIGHTNESS) / 8;
             settings.Set(SETTING_CUR_BRIGHTNESS, settings.Get(SETTING_CUR_BRIGHTNESS) + step);
             if (settings.Get(SETTING_CUR_BRIGHTNESS) > settings.Get(SETTING_MAX_BRIGHTNESS))
@@ -198,7 +206,17 @@ void setup()
         }
         else if (evt == Button::RELEASE)
         {
-            settings.Save();
+            if (btnSetAnimationMode.IsPressed())
+            {
+                leds.FadeToOff();
+                sleepMode = true;
+                Button::WaitForAllButtonsToBeReleased();
+            }
+            else
+            {
+
+                settings.Save();
+            }
         }
     });
 
@@ -206,20 +224,29 @@ void setup()
     bool initializedBluetooth = false;
     while (true)
     {
-        if (!initializedBluetooth && millis() > 500)
+        if (!sleepMode)
         {
-            BluetoothInit();
-            initializedBluetooth = true;
-        }
+            if (!initializedBluetooth && millis() > 500)
+            {
+                BluetoothInit();
+                initializedBluetooth = true;
+            }
 
-        if (initializedBluetooth)
+            if (initializedBluetooth)
+            {
+                BluetoothProcessing();
+            }
+
+            clock.Check();
+
+            Button::CheckAll();
+        }
+        else if (sleepMode && Button::AreAnyButtonsPressed())
         {
-            BluetoothProcessing();
+            leds.SetToCurrentBrightness();
+            sleepMode = false;
+            Button::WaitForAllButtonsToBeReleased();
         }
-
-        clock.Check();
-
-        Button::CheckAll();
     }
 }
 

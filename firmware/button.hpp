@@ -67,6 +67,25 @@ class Button
         }
     }
 
+    static bool AreAnyButtonsPressed()
+    {
+        for (auto button : m_buttons)
+        {
+            if (digitalRead(button->m_pin) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static void WaitForAllButtonsToBeReleased()
+    {
+        while (AreAnyButtonsPressed())
+        {
+        }
+    }
+
     void SetHandlerFunc(HandlerFunc_t &&func)
     {
         m_handlerFunc = func;
@@ -143,6 +162,8 @@ class Button
         {
             if (m_currentButtonState == m_futureButtonState)
             {
+                m_pressed = m_currentButtonState;
+
                 if (m_currentButtonState)
                 {
                     m_millisAtPress = m_millisSinceRepeat = millis();
@@ -153,8 +174,6 @@ class Button
                     SendEvent(RELEASE);
                     m_disableEvents = false;
                 }
-
-                m_pressed = m_currentButtonState;
             }
 
             m_checkingDebounce = false;

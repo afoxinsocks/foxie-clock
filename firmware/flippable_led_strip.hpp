@@ -26,4 +26,22 @@ class FlippableLEDStrip : public Adafruit_NeoPixel
             Adafruit_NeoPixel::setPixelColor(n, c);
         }
     }
+
+    void FadeToOff()
+    {
+        for (int brightness = Settings::Get(SETTING_CUR_BRIGHTNESS); brightness >= 0; brightness -= 3)
+        {
+            setBrightness(brightness);
+            show();
+        }
+        setBrightness(0);
+        show();
+    }
+
+    void SetToCurrentBrightness()
+    {
+
+        setBrightness(Settings::Get(SETTING_CUR_BRIGHTNESS));
+        show();
+    }
 };
