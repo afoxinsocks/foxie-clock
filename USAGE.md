@@ -23,3 +23,9 @@ Animation modes can be changed by pressing the `M` button while not in `Set Time
 * ... more modes are coming!
 
 Changing the animation mode will be possible via the mobile app within the coming months, and can also be manually set via the  `setup()` function in `firmware.ino` and then [re-upload the firmware](INSTALLING.md).
+
+## Toggling between edge-lit and PXL mode
+Hold the `M` button for at least 3 seconds to toggle. This is useful when you switch between the acrylic digit base and the PXL cover.
+
+## Sleep mode
+Press the `M` button, then while holding `M`, press and release the `B` button. The digits will fade out and stay off until any button is pressed.
