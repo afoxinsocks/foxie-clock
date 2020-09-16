@@ -21,7 +21,10 @@ class Button
         WAIT_BEFORE_REPEAT = 350,
     };
 
-    using Func_t = std::function<void(const Event_e evt)>;
+    using HandlerFunc_t = std::function<void(const Event_e evt)>;
+
+    static std::vector<Button*> m_buttons;
+
     const uint8_t m_pin;
 
     bool m_enabled{true};
@@ -39,20 +42,31 @@ class Button
     bool m_repeatAllowed{true};
     int m_repeatRateMs{DEFAULT_REPEAT_RATE_MS};
 
-    Func_t m_func;
+    HandlerFunc_t m_handlerFunc;
 
   public:
     Button(const uint8_t pin)
-        : m_pin(pin), m_func([](const Event_e evt) {
+        : m_pin(pin), m_handlerFunc([](const Event_e evt) {
               // empty function that does nothing by default
           })
     {
         pinMode(m_pin, INPUT_PULLUP);
+
+        // store this new button so it can be checked by Process() later
+        m_buttons.push_back(this);
     }
 
-    void SetHandlerFunc(Func_t &&func)
+    static void CheckAll()
     {
-        m_func = func;
+        for (auto button : m_buttons)
+        {
+            button->Check();
+        }
+    }
+
+    void SetHandlerFunc(HandlerFunc_t &&func)
+    {
+        m_handlerFunc = func;
     }
 
     void SetEnabled(const bool enabled)
@@ -74,6 +88,21 @@ class Button
         m_repeatRateMs = repeatRateMs;
     }
 
+    bool IsPressed()
+    {
+        return m_enabled && m_pressed;
+    }
+
+    int TimePressed()
+    {
+        if (!m_enabled || !m_pressed)
+        {
+            return 0;
+        }
+        return (int)millis() - m_millisAtPress;
+    }
+
+  private:
     void Check()
     {
         m_currentButtonState = (digitalRead(m_pin) == 0);
@@ -92,21 +121,6 @@ class Button
         }
     }
 
-    bool IsPressed()
-    {
-        return m_enabled && m_pressed;
-    }
-
-    int TimePressed()
-    {
-        if (!m_enabled || !m_pressed)
-        {
-            return 0;
-        }
-        return (int)millis() - m_millisAtPress;
-    }
-
-  private:
     void BeginDebouncing()
     {
         m_millisSinceDebounceStarted = millis();
@@ -160,7 +174,7 @@ class Button
     {
         if (m_enabled)
         {
-            m_func(evt);
+            m_handlerFunc(evt);
         }
     }
 };

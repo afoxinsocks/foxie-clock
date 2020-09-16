@@ -13,6 +13,7 @@
 
 Settings *Settings::m_inst = nullptr;
 CmdHandler *CmdHandler::m_inst = nullptr;
+std::vector<Button*> Button::m_buttons;
 
 enum HardwareConfig_e
 {
@@ -202,12 +203,7 @@ void setup()
 
         clock.Check();
 
-        btnSetTime.Check();
-        btnHour.Check();
-        btnMinute.Check();
-        btnSetAnimationMode.Check();
-        btnColor.Check();
-        btnBrightness.Check();
+        Button::CheckAll();
     }
 }
 

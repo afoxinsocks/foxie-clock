@@ -124,23 +124,13 @@ class DigitManager
         return rtc_hal_millis() < (FADE_TIME_MS / 2) || rtc_hal_millis() > (1000 - (FADE_TIME_MS / 2));
     }
 
-    bool IsLastSecondOfMinute()
-    {
-        return rtc_hal_second() == 59;
-    }
-
-    bool IsLastSecondOfHour()
-    {
-        return rtc_hal_minute() == 59 && rtc_hal_second() == 59;
-    }
-
     std::shared_ptr<Digit> CreateDigit(const LEDNumbers_e firstLED)
     {
-        if (Settings::Get(SETTING_DIGIT_TYPE) == 1)
+        if (Settings::Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
         {
             return std::make_shared<EdgeLitDigit>(m_leds, firstLED, Settings::Get(SETTING_COLOR));
         }
-        else
+        else // DT_PIXELS
         {
             return std::make_shared<DisplayDigit>(m_leds, firstLED, Settings::Get(SETTING_COLOR));
         }
