@@ -9,6 +9,7 @@ class Button
     enum Event_e
     {
         PRESS,
+        HELD,
         REPEAT,
         RELEASE,
     };
@@ -23,7 +24,7 @@ class Button
 
     using HandlerFunc_t = std::function<void(const Event_e evt)>;
 
-    static std::vector<Button*> m_buttons;
+    static std::vector<Button *> m_buttons;
 
     const uint8_t m_pin;
 
@@ -36,6 +37,8 @@ class Button
 
     bool m_pressed{false};
     bool m_isRepeating{false};
+    bool m_disableEvents{false};
+
     int m_millisAtPress{0};
     int m_millisSinceRepeat{0};
 
@@ -102,6 +105,11 @@ class Button
         return (int)millis() - m_millisAtPress;
     }
 
+    void DisableEventsUntilRelease()
+    {
+        m_disableEvents = true;
+    }
+
   private:
     void Check()
     {
@@ -117,6 +125,7 @@ class Button
         }
         else if (m_pressed)
         {
+            SendEvent(HELD);
             CheckForButtonRepeat();
         }
     }
@@ -142,6 +151,7 @@ class Button
                 else
                 {
                     SendEvent(RELEASE);
+                    m_disableEvents = false;
                 }
 
                 m_pressed = m_currentButtonState;
@@ -172,7 +182,7 @@ class Button
 
     void SendEvent(const Event_e evt)
     {
-        if (m_enabled)
+        if (m_enabled && !m_disableEvents)
         {
             m_handlerFunc(evt);
         }

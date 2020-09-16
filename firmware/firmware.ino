@@ -13,7 +13,7 @@
 
 Settings *Settings::m_inst = nullptr;
 CmdHandler *CmdHandler::m_inst = nullptr;
-std::vector<Button*> Button::m_buttons;
+std::vector<Button *> Button::m_buttons;
 
 enum HardwareConfig_e
 {
@@ -27,6 +27,7 @@ enum HardwareConfig_e
     NUM_BTNS = 4,
 
     HOLD_SET_TIME_BTN_DELAY = 1000,
+    HELD_BTN_DELAY = 2500,
 };
 
 void setup()
@@ -154,6 +155,21 @@ void setup()
             clock.UseAnimation((AnimationType_e)settings.Get(SETTING_ANIMATION_TYPE));
 
             clock.DisplayValue(settings.Get(SETTING_ANIMATION_TYPE) * 1);
+        }
+        else if (evt == Button::HELD && btnSetAnimationMode.TimePressed() > HELD_BTN_DELAY)
+        {
+            btnSetAnimationMode.DisableEventsUntilRelease();
+
+            if (Settings::Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
+            {
+                Settings::Set(SETTING_DIGIT_TYPE, DT_PIXELS);
+            }
+            else
+            {
+                Settings::Set(SETTING_DIGIT_TYPE, DT_EDGE_LIT);
+            }
+
+            clock.ChangeDigitType();
         }
     });
 
