@@ -162,8 +162,6 @@ class Button
         {
             if (m_currentButtonState == m_futureButtonState)
             {
-                m_pressed = m_currentButtonState;
-
                 if (m_currentButtonState)
                 {
                     m_millisAtPress = m_millisSinceRepeat = millis();
@@ -174,6 +172,7 @@ class Button
                     SendEvent(RELEASE);
                     m_disableEvents = false;
                 }
+                m_pressed = m_currentButtonState;
             }
 
             m_checkingDebounce = false;
