@@ -122,7 +122,8 @@ void setup()
             btnHour.SetEnabled(clockState == STATE_SET_TIME);
             btnMinute.SetEnabled(clockState == STATE_SET_TIME);
 
-            // disable the animation mode button
+            Settings::Set(SETTING_TRANSITION_TYPE, (clockState == STATE_NORMAL));
+
             btnSetAnimationMode.SetEnabled(clockState == STATE_NORMAL);
         }
 
@@ -133,7 +134,7 @@ void setup()
         if (evt == Button::RELEASE)
         {
             rtc_hal_setTime(rtc_hal_hour() + 1, rtc_hal_minute(), rtc_hal_second());
-            clock.Draw();
+            clock.UpdateDigitsFromRTC();
         }
     });
 
@@ -141,7 +142,7 @@ void setup()
         if (evt == Button::RELEASE || evt == Button::REPEAT)
         {
             rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
-            clock.Draw();
+            clock.UpdateDigitsFromRTC();
         }
     });
 
