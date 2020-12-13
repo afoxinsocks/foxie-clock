@@ -29,6 +29,10 @@ class Animator
     {
         m_wheelColor = wheelColor;
         m_lastSecond = rtc_hal_second();
+        Go();
+    }
+    virtual ~Animator()
+    {
     }
 
     virtual void Go()
@@ -77,7 +81,6 @@ class AnimatorGlow : public Animator
 {
     using Animator::Animator;
 
-  private:
     float m_brightness{1.0f};
     float m_incrementer{0.1f};
     int m_millis{0};
@@ -113,28 +116,29 @@ class AnimatorGlow : public Animator
 // Changes one digit color at a time, flowing to the left.
 class AnimatorCycleFlowLeft : public Animator
 {
-  public:
-    AnimatorCycleFlowLeft(DigitPtrs_t digits, const uint8_t wheelColor) : Animator(digits, wheelColor)
-    {
-        m_lastSecond = rtc_hal_second();
-        Animator::Go();
-    }
+    using Animator::Animator;
 
+  public:
     virtual void Go() override
     {
         if (m_lastSecond != rtc_hal_second())
         {
-            CycleDigitColors();
+            CycleDigitColors(false);
             m_lastSecond = rtc_hal_second();
         }
     }
 
+    virtual void ColorButtonPressed(uint8_t wheelColor) override
+    {
+        CycleDigitColors(true);
+    }
+
   private:
-    void CycleDigitColors()
+    void CycleDigitColors(bool forceRotate = false)
     {
         SetWheelColor(m_wheelColor + 6);
         m_digits[5]->SetColor(ColorWheel(m_wheelColor));
-        if (m_digits[5]->GetNumDisplayed() == 9)
+        if (m_digits[5]->GetNumDisplayed() == 9 || forceRotate)
         {
             for (int i = 0; i < 5; ++i)
             {
@@ -190,9 +194,9 @@ class AnimatorSetTime : public Animator
     {
         for (int i = 0; i < 6; ++i)
         {
-            m_digits[i]->SetColor(ColorWheel((uint8_t)(m_wheelColor + 128)));
+            m_digits[i]->SetColor(ColorWheel(m_wheelColor + 128));
         }
-    }
+    };
 };
 
 static inline std::shared_ptr<Animator> AnimatorFactory(DigitPtrs_t digits, const AnimationType_e type,
