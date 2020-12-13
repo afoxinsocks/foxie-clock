@@ -87,7 +87,6 @@ class DigitManager
     {
         for (size_t i = 0; i < NUM_DIGITS; ++i)
         {
-            // m_digits[i]->SetBrightness(1.0f);
             m_digits[i]->Display(m_numbers[i]);
         }
 
@@ -95,11 +94,6 @@ class DigitManager
     }
 
   private:
-    // bool IsFadeWindow()
-    // {
-    //     return rtc_hal_millis() < (FADE_TIME_MS / 2) || rtc_hal_millis() > (1000 - (FADE_TIME_MS / 2));
-    // }
-
     std::shared_ptr<Digit> CreateDigit(const LEDNumbers_e firstLED)
     {
         if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)

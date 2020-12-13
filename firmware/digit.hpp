@@ -1,9 +1,5 @@
 #pragma once
 #include "Adafruit_NeoPixel.h"
-#include "rtc_hal.hpp"
-
-// returns a color transitioning from r -> g -> b and back to r
-// lightly modified from Adafruit NeoPixel strand test
 
 enum DigitTypes_e
 {
@@ -11,6 +7,8 @@ enum DigitTypes_e
     DT_PIXELS = 2,
 };
 
+// returns a color transitioning from r -> g -> b and back to r
+// lightly modified from Adafruit NeoPixel strand test
 static inline uint32_t ColorWheel(uint8_t pos)
 {
     pos = 255 - pos;
@@ -54,8 +52,8 @@ class Digit
     float m_brightness{1.0f};
 
   public:
-    Digit(Adafruit_NeoPixel &strip, const int firstLED, const int onColor)
-        : m_leds(strip), m_first(firstLED), m_color(onColor)
+    Digit(Adafruit_NeoPixel &leds, const int firstLED, const int onColor)
+        : m_leds(leds), m_first(firstLED), m_color(onColor)
     {
     }
 
