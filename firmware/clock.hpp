@@ -229,13 +229,13 @@ class Clock
                 return;
             }
 
-            if (evt == Button::PRESS || evt == Button::REPEAT)
+            if (evt == Button::REPEAT || evt == Button::RELEASE)
             {
-                if ()
-                    m_settings.Set(SETTING_COLOR, (m_settings.Get(SETTING_COLOR) + 8) & 0xFF);
+                m_settings.Set(SETTING_COLOR, (m_settings.Get(SETTING_COLOR) + 8) & 0xFF);
                 m_digitMgr.ColorButtonPressed(m_settings.Get(SETTING_COLOR));
             }
-            else if (evt == Button::RELEASE)
+
+            if (evt == Button::RELEASE)
             {
                 m_settings.Save();
             }
@@ -244,6 +244,8 @@ class Clock
         m_btnToggleDisplay.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
             {
+                m_btnAnimationMode.SetEnabled(false);
+                m_btnColor.SetEnabled(false);
                 if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
                 {
                     m_settings.Set(SETTING_DIGIT_TYPE, DT_PIXELS);
@@ -255,6 +257,11 @@ class Clock
 
                 m_settings.Save();
                 m_digitMgr.CreateDigits();
+            }
+            else
+            {
+                m_btnAnimationMode.SetEnabled(true);
+                m_btnColor.SetEnabled(true);
             }
         };
 

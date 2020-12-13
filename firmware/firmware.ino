@@ -7,8 +7,8 @@ enum HardwareConfig_e
     NUM_DIGITS = 6,
     NUM_BTNS = 4,
 
-    DELAY_FOR_SET_TIME_MODE = 1000,
-    DELAY_FOR_TOGGLE_DISPLAY = 3000,
+    DELAY_FOR_SET_TIME_MODE = 750,
+    DELAY_FOR_TOGGLE_DISPLAY = 750,
 };
 
 enum Pins_e 
