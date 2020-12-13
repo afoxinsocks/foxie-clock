@@ -33,7 +33,7 @@ class Button
 
         // values below are in milliseconds
         int repeatRate{100};
-        int delayBeforeRepeat{350};
+        int delayBeforeRepeat{500};
         int delayBeforePress{0}; // used for button combinations
         int debounceTime{20};
         HandlerFunc_t handlerFunc;

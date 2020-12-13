@@ -1,12 +1,12 @@
 #pragma once
-#include "digit.hpp"
-#include "settings.hpp"
 #include <memory>
 #include <vector>
 
+#include "animator.hpp"
+#include "digit.hpp"
+#include "settings.hpp"
+
 using Numbers_t = std::vector<uint8_t>; // must always be NUM_DIGITS size
-using DigitPtr_t = std::shared_ptr<Digit>;
-using DigitPtrs_t = std::vector<DigitPtr_t>;
 
 class DigitManager
 {
@@ -37,6 +37,8 @@ class DigitManager
     // shared pointers used so that destructing automatically deletes the digit
     DigitPtrs_t m_digits;
 
+    std::shared_ptr<Animator> m_animator;
+
   public:
     DigitManager(Adafruit_NeoPixel &leds, Settings &settings) : m_leds(leds), m_settings(settings)
     {
@@ -55,30 +57,30 @@ class DigitManager
         m_digits.push_back(CreateDigit(DIGIT_4_LED));
         m_digits.push_back(CreateDigit(DIGIT_5_LED));
         m_digits.push_back(CreateDigit(DIGIT_6_LED));
+
+        UseAnimation((AnimationType_e)m_settings.Get(SETTING_ANIMATION_TYPE));
     }
 
-    void SetColorForDigit(const int digitNum, int color)
+    void UseAnimation(const AnimationType_e type)
     {
-        m_digits[digitNum]->SetColor(color);
-    }
-
-    void SetColors(int color)
-    {
-        for (auto &digit : m_digits)
-        {
-            digit->SetColor(color);
-        }
-        Display(m_numbers);
+        m_animator = AnimatorFactory(m_digits, type, m_settings.Get(SETTING_COLOR));
     }
 
     void Display(const Numbers_t numbers)
     {
         m_numbers = numbers;
 
+        m_animator->Go();
+
         for (size_t i = 0; i < NUM_DIGITS; ++i)
         {
             m_digits[i]->Display(m_numbers[i]);
         }
+    }
+
+    void ColorButtonPressed(const uint8_t wheelColor)
+    {
+        m_animator->ColorButtonPressed(wheelColor);
     }
 
   private:

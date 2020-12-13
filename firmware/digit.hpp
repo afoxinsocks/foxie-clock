@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include "Adafruit_NeoPixel.h"
 
 enum DigitTypes_e
@@ -92,6 +94,8 @@ class Digit
         m_leds.setPixelColor(pixelNum, ScaleBrightness(color, m_brightness));
     }
 };
+using DigitPtr_t = std::shared_ptr<Digit>;
+using DigitPtrs_t = std::vector<DigitPtr_t>;
 
 // lights two LEDs at a time under each numeral
 class EdgeLitDigit : public Digit

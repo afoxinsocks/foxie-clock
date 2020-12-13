@@ -1,7 +1,8 @@
 #pragma once
-#include "digit_manager.hpp"
-#include "settings.hpp"
 #include <memory>
+
+#include "digit.hpp"
+#include "rtc_hal.hpp"
 
 enum AnimationType_e
 {
@@ -19,12 +20,14 @@ enum AnimationType_e
 class Animator
 {
   protected:
-    DigitManager &m_digitMgr;
+    DigitPtrs_t m_digits;
     int m_lastSecond;
+    uint8_t m_wheelColor;
 
   public:
-    Animator(DigitManager &digitMgr) : m_digitMgr(digitMgr)
+    Animator(DigitPtrs_t digits, const uint8_t wheelColor) : m_digits(digits)
     {
+        m_wheelColor = wheelColor;
         m_lastSecond = rtc_hal_second();
     }
 
@@ -33,23 +36,26 @@ class Animator
         // does nothing except update the digit colors to the current setting
         for (int i = 0; i < 6; ++i)
         {
-            m_digitMgr.SetDigitColor(i, ColorWheel(Settings::Get(SETTING_COLOR)));
+            m_digits[i]->SetColor(ColorWheel(m_wheelColor));
         }
     };
 
+    virtual void SetWheelColor(const uint8_t wheelColor)
+    {
+        m_wheelColor = wheelColor;
+    }
+
     // an animator can choose to do something special when the color button
     // is pressed
-    virtual void ColorButtonPressed()
+    virtual void ColorButtonPressed(uint8_t wheelColor)
     {
+        SetWheelColor(wheelColor);
     }
 };
 
 class AnimatorCycleAll : public Animator
 {
     using Animator::Animator;
-
-  private:
-    uint8_t m_color{0};
 
   public:
     virtual void Go() override
@@ -59,8 +65,8 @@ class AnimatorCycleAll : public Animator
             for (int i = 0; i < 6; ++i)
             {
 
-                m_color += 16;
-                m_digitMgr.SetDigitColor(i, ColorWheel(m_color));
+                m_wheelColor += 16;
+                m_digits[i]->SetColor(ColorWheel(m_wheelColor));
             }
             m_lastSecond = rtc_hal_second();
         }
@@ -79,10 +85,10 @@ class AnimatorGlow : public Animator
   public:
     virtual void Go() override
     {
-        int scaledColor = ScaleBrightness(ColorWheel(Settings::Get(SETTING_COLOR)), m_brightness);
+        int scaledColor = ScaleBrightness(ColorWheel(m_wheelColor), m_brightness);
         for (int i = 0; i < 6; ++i)
         {
-            m_digitMgr.SetDigitColor(i, scaledColor);
+            m_digits[i]->SetColor(scaledColor);
         }
 
         if ((int)millis() - m_millis >= 25)
@@ -108,7 +114,7 @@ class AnimatorGlow : public Animator
 class AnimatorCycleFlowLeft : public Animator
 {
   public:
-    AnimatorCycleFlowLeft(DigitManager &digitMgr) : Animator(digitMgr)
+    AnimatorCycleFlowLeft(DigitPtrs_t digits, const uint8_t wheelColor) : Animator(digits, wheelColor)
     {
         m_lastSecond = rtc_hal_second();
         Animator::Go();
@@ -116,40 +122,27 @@ class AnimatorCycleFlowLeft : public Animator
 
     virtual void Go() override
     {
-        for (int i = 0; i < 6; ++i)
+        if (m_lastSecond != rtc_hal_second())
         {
-            if (m_lastSecond != rtc_hal_second() && m_digitMgr.prevNumbers[i] != m_digitMgr.numbers[i])
-            {
-                CycleDigitColor(i);
-                m_lastSecond = rtc_hal_second();
-            }
-        }
-    }
-
-    virtual void ColorButtonPressed() override
-    {
-        // invalidate previous numbers
-        for (auto &prev : m_digitMgr.prevNumbers)
-        {
-            prev = Digit::INVALID;
+            CycleDigitColors();
+            m_lastSecond = rtc_hal_second();
         }
     }
 
   private:
-    void CycleDigitColor(const int digitNum)
+    void CycleDigitColors()
     {
-        int newColor;
-        if (digitNum == 5)
+        SetWheelColor(m_wheelColor + 6);
+        m_digits[5]->SetColor(ColorWheel(m_wheelColor));
+        if (m_lastSecond % 10 == 9)
         {
-            Settings::Set(SETTING_COLOR, Settings::Get(SETTING_COLOR) + 6);
-            newColor = ColorWheel(Settings::Get(SETTING_COLOR));
+            for (int i = 0; i < 5; ++i)
+            {
+                // get the color of the digit to the right
+                int newColor = m_digits[i + 1]->GetColor();
+                m_digits[i]->SetColor(newColor);
+            }
         }
-        else
-        {
-            // get the color of the digit to the right
-            newColor = m_digitMgr.GetDigitColor(digitNum + 1);
-        }
-        m_digitMgr.SetDigitColor(digitNum, newColor);
     }
 };
 
@@ -178,11 +171,11 @@ class AnimatorRainbow : public Animator
                 m_colors[i] -= 255.0f;
             }
 
-            m_digitMgr.SetDigitColor(i, ColorWheel(m_colors[i]));
+            m_digits[i]->SetColor(ColorWheel(m_colors[i]));
         }
     }
 
-    virtual void ColorButtonPressed() override
+    virtual void ColorButtonPressed(uint8_t wheelColor) override
     {
         m_paused = !m_paused;
     }
@@ -197,26 +190,27 @@ class AnimatorSetTime : public Animator
     {
         for (int i = 0; i < 6; ++i)
         {
-            m_digitMgr.SetDigitColor(i, ColorWheel((uint8_t)(Settings::Get(SETTING_COLOR) + 128)));
+            m_digits[i]->SetColor(ColorWheel((uint8_t)(m_wheelColor + 128)));
         }
     }
 };
 
-static inline std::shared_ptr<Animator> AnimatorFactory(DigitManager &digitMgr, const AnimationType_e type)
+static inline std::shared_ptr<Animator> AnimatorFactory(DigitPtrs_t digits, const AnimationType_e type,
+                                                        uint8_t wheelColor)
 {
     switch (type)
     {
     case ANIM_GLOW:
-        return std::make_shared<AnimatorGlow>(digitMgr);
+        return std::make_shared<AnimatorGlow>(digits, wheelColor);
     case ANIM_CYCLE_COLORS:
-        return std::make_shared<AnimatorCycleAll>(digitMgr);
+        return std::make_shared<AnimatorCycleAll>(digits, wheelColor);
     case ANIM_CYCLE_FLOW_LEFT:
-        return std::make_shared<AnimatorCycleFlowLeft>(digitMgr);
+        return std::make_shared<AnimatorCycleFlowLeft>(digits, wheelColor);
     case ANIM_RAINBOW:
-        return std::make_shared<AnimatorRainbow>(digitMgr);
+        return std::make_shared<AnimatorRainbow>(digits, wheelColor);
     case ANIM_SET_TIME:
-        return std::make_shared<AnimatorSetTime>(digitMgr);
+        return std::make_shared<AnimatorSetTime>(digits, wheelColor);
     }
 
-    return std::make_shared<Animator>(digitMgr);
+    return std::make_shared<Animator>(digits, wheelColor);
 }

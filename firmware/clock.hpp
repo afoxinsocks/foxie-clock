@@ -2,8 +2,10 @@
 #include <memory>
 
 #include "Adafruit_NeoPixel.h"
+#include "animator.hpp"
 #include "button.hpp"
 #include "digit_manager.hpp"
+#include "elapsed_time.hpp"
 #include "rtc_hal.hpp"
 #include "settings.hpp"
 
@@ -14,7 +16,7 @@ class Clock
     {
         STATE_NORMAL,
         STATE_SET_TIME,
-        STATE_DISPLAY_VALUE,
+        STATE_ALT_DISPLAY,
     };
 
     Adafruit_NeoPixel m_leds{NUM_LEDS, PIN_FOR_LEDS, NEO_GRB + NEO_KHZ400};
@@ -31,12 +33,14 @@ class Clock
     Button m_btnToggleDisplay{{PIN_BTN_M, PIN_BTN_C}};
     std::vector<Button *> m_buttons;
 
+    Numbers_t m_alternateNumbers;
+    ElapsedTime m_timeInAltDisplayMode;
+
   public:
     Clock() : m_digitMgr(m_leds, m_settings)
     {
         Serial.begin(115200);
         rtc_hal_init();
-
         m_leds.begin();
         m_leds.setBrightness(m_settings.Get(SETTING_CUR_BRIGHTNESS));
 
@@ -47,10 +51,9 @@ class Clock
         m_btnColor.config.repeatRate = 200;
         m_btnBrightness.config.canRepeat = true;
 
+        // special behavior buttons
         m_btnSetTime.config.delayBeforePress = DELAY_FOR_SET_TIME_MODE;
-        m_btnToggleDisplay.config.delayBeforePress = DELAY_FOR_DISPLAY_TOGGLE;
-
-        ConfigureButtonHandlers();
+        m_btnToggleDisplay.config.delayBeforePress = DELAY_FOR_TOGGLE_DISPLAY;
 
         m_buttons.push_back(&m_btnSetTime);
         m_buttons.push_back(&m_btnHour);
@@ -59,13 +62,31 @@ class Clock
         m_buttons.push_back(&m_btnColor);
         m_buttons.push_back(&m_btnBrightness);
         m_buttons.push_back(&m_btnToggleDisplay);
+
+        ConfigureButtonHandlers();
     }
 
     void Loop()
     {
         CheckForButtonEvents();
-
         DisplayDigits();
+    }
+
+    void AlternateDisplay(unsigned int value)
+    {
+        m_state = STATE_ALT_DISPLAY;
+        m_timeInAltDisplayMode.Reset();
+
+        m_digitMgr.UseAnimation(ANIM_NONE);
+
+        m_alternateNumbers.resize(NUM_DIGITS, Digit::INVALID);
+
+        int digitNum = 5;
+        do
+        {
+            m_alternateNumbers[digitNum--] = value % 10;
+            value /= 10;
+        } while (value && digitNum >= 0);
     }
 
   private:
@@ -79,13 +100,28 @@ class Clock
 
     void DisplayDigits()
     {
-        if (m_state == STATE_NORMAL)
-        {
-            rtc_hal_update();
-        }
+        Numbers_t numbers;
 
-        const auto numbers = GetNumbersFromRTC();
-        m_digitMgr.Display(numbers);
+        switch (m_state)
+        {
+        case STATE_NORMAL:
+            rtc_hal_update();
+            // no break -- fall through
+
+        case STATE_SET_TIME:
+            numbers = GetNumbersFromRTC();
+            m_digitMgr.Display(numbers);
+            break;
+
+        case STATE_ALT_DISPLAY:
+            m_digitMgr.Display(m_alternateNumbers);
+            if (m_timeInAltDisplayMode.Ms() > 1000)
+            {
+                m_state = STATE_NORMAL;
+                m_digitMgr.UseAnimation((AnimationType_e)m_settings.Get(SETTING_ANIMATION_TYPE));
+            }
+            break;
+        }
 
         m_leds.show();
     }
@@ -125,18 +161,20 @@ class Clock
 
     void ConfigureButtonHandlers()
     {
+        // TODO: Add a bit about what I'm doing here with these lambda functions
+
         m_btnSetTime.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
             {
                 if (m_state == STATE_NORMAL)
                 {
                     m_state = STATE_SET_TIME;
-                    m_digitMgr.SetColors(ColorWheel((uint8_t)(m_settings.Get(SETTING_COLOR) + 128)));
+                    m_digitMgr.UseAnimation(ANIM_SET_TIME);
                 }
                 else
                 {
                     m_state = STATE_NORMAL;
-                    m_digitMgr.SetColors(ColorWheel(m_settings.Get(SETTING_COLOR)));
+                    m_digitMgr.UseAnimation((AnimationType_e)m_settings.Get(SETTING_ANIMATION_TYPE));
                     rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute(), rtc_hal_second());
                 }
             }
@@ -146,11 +184,13 @@ class Clock
                 {
                     m_btnHour.SetEnabled(true);
                     m_btnMinute.SetEnabled(true);
+                    m_btnAnimationMode.SetEnabled(false);
                 }
                 else
                 {
                     m_btnHour.SetEnabled(false);
                     m_btnMinute.SetEnabled(false);
+                    m_btnAnimationMode.SetEnabled(true);
                 }
             }
         };
@@ -169,13 +209,31 @@ class Clock
             }
         };
 
-        m_btnColor.config.handlerFunc = [&](const Button::Event_e evt) {
-            if ((evt == Button::PRESS || evt == Button::REPEAT) && !m_btnAnimationMode.IsPressed())
+        m_btnAnimationMode.config.handlerFunc = [&](const Button::Event_e evt) {
+            if (evt == Button::RELEASE)
             {
-                const int newColor = (m_settings.Get(SETTING_COLOR) + 8) & 0xFF;
-                m_settings.Set(SETTING_COLOR, newColor);
-                m_digitMgr.SetColors(ColorWheel(newColor));
-                // TODO: tell the animator about this button press
+                m_settings.Set(SETTING_ANIMATION_TYPE, m_settings.Get(SETTING_ANIMATION_TYPE) + 1);
+                if (m_settings.Get(SETTING_ANIMATION_TYPE) >= ANIM_TOTAL)
+                {
+                    m_settings.Set(SETTING_ANIMATION_TYPE, ANIM_NONE);
+                }
+                m_settings.Save();
+                m_digitMgr.UseAnimation((AnimationType_e)m_settings.Get(SETTING_ANIMATION_TYPE));
+                AlternateDisplay(m_settings.Get(SETTING_ANIMATION_TYPE));
+            }
+        };
+
+        m_btnColor.config.handlerFunc = [&](const Button::Event_e evt) {
+            if (m_btnAnimationMode.IsPressed())
+            {
+                return;
+            }
+
+            if (evt == Button::PRESS || evt == Button::REPEAT)
+            {
+                if ()
+                    m_settings.Set(SETTING_COLOR, (m_settings.Get(SETTING_COLOR) + 8) & 0xFF);
+                m_digitMgr.ColorButtonPressed(m_settings.Get(SETTING_COLOR));
             }
             else if (evt == Button::RELEASE)
             {
