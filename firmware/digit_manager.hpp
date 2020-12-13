@@ -57,6 +57,20 @@ class DigitManager
         m_digits.push_back(CreateDigit(DIGIT_6_LED));
     }
 
+    void SetColorForDigit(const int digitNum, int color)
+    {
+        m_digits[digitNum]->SetColor(color);
+    }
+
+    void SetColors(int color)
+    {
+        for (auto &digit : m_digits)
+        {
+            digit->SetColor(color);
+        }
+        Display(m_numbers);
+    }
+
     void Display(const Numbers_t numbers)
     {
         m_numbers = numbers;
@@ -72,11 +86,11 @@ class DigitManager
     {
         if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
         {
-            return std::make_shared<EdgeLitDigit>(m_leds, firstLED, m_settings.Get(SETTING_COLOR));
+            return std::make_shared<EdgeLitDigit>(m_leds, firstLED, ColorWheel(m_settings.Get(SETTING_COLOR)));
         }
         else // DT_PIXELS
         {
-            return std::make_shared<DisplayDigit>(m_leds, firstLED, m_settings.Get(SETTING_COLOR));
+            return std::make_shared<DisplayDigit>(m_leds, firstLED, ColorWheel(m_settings.Get(SETTING_COLOR)));
         }
     }
 };

@@ -43,7 +43,9 @@ class Clock
         m_btnHour.SetEnabled(false);
         m_btnMinute.SetEnabled(false);
         m_btnMinute.config.canRepeat = true;
-        m_btnMinute.config.repeatRate = 100;
+        m_btnColor.config.canRepeat = true;
+        m_btnColor.config.repeatRate = 200;
+        m_btnBrightness.config.canRepeat = true;
 
         m_btnSetTime.config.delayBeforePress = DELAY_FOR_SET_TIME_MODE;
         m_btnToggleDisplay.config.delayBeforePress = DELAY_FOR_DISPLAY_TOGGLE;
@@ -129,17 +131,14 @@ class Clock
                 if (m_state == STATE_NORMAL)
                 {
                     m_state = STATE_SET_TIME;
-                    m_settings.Set(SETTING_COLOR, 0x00FFFF);
+                    m_digitMgr.SetColors(ColorWheel((uint8_t)(m_settings.Get(SETTING_COLOR) + 128)));
                 }
                 else
                 {
                     m_state = STATE_NORMAL;
-                    m_settings.Set(SETTING_COLOR, 0x0000FF);
+                    m_digitMgr.SetColors(ColorWheel(m_settings.Get(SETTING_COLOR)));
                     rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute(), rtc_hal_second());
                 }
-
-                // TODO: tell the digit manager to use a different animator instead of changing the colors above
-                m_digitMgr.CreateDigits();
             }
             else if (evt == Button::RELEASE)
             {
@@ -167,6 +166,59 @@ class Clock
             if (evt == Button::REPEAT || evt == Button::RELEASE)
             {
                 rtc_hal_setTime(rtc_hal_hour(), rtc_hal_minute() + 1, rtc_hal_second());
+            }
+        };
+
+        m_btnColor.config.handlerFunc = [&](const Button::Event_e evt) {
+            if ((evt == Button::PRESS || evt == Button::REPEAT) && !m_btnAnimationMode.IsPressed())
+            {
+                const int newColor = (m_settings.Get(SETTING_COLOR) + 8) & 0xFF;
+                m_settings.Set(SETTING_COLOR, newColor);
+                m_digitMgr.SetColors(ColorWheel(newColor));
+                // TODO: tell the animator about this button press
+            }
+            else if (evt == Button::RELEASE)
+            {
+                m_settings.Save();
+            }
+        };
+
+        m_btnToggleDisplay.config.handlerFunc = [&](const Button::Event_e evt) {
+            if (evt == Button::PRESS)
+            {
+                if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
+                {
+                    m_settings.Set(SETTING_DIGIT_TYPE, DT_PIXELS);
+                }
+                else
+                {
+                    m_settings.Set(SETTING_DIGIT_TYPE, DT_EDGE_LIT);
+                }
+
+                m_settings.Save();
+                m_digitMgr.CreateDigits();
+            }
+        };
+
+        m_btnBrightness.config.handlerFunc = [&](const Button::Event_e evt) {
+            if (evt == Button::PRESS || evt == Button::REPEAT)
+            {
+                const uint8_t step = m_settings.Get(SETTING_MAX_BRIGHTNESS) / 8;
+                m_settings.Set(SETTING_CUR_BRIGHTNESS, m_settings.Get(SETTING_CUR_BRIGHTNESS) + step);
+
+                if (m_settings.Get(SETTING_CUR_BRIGHTNESS) > m_settings.Get(SETTING_MAX_BRIGHTNESS))
+                {
+                    if (evt == Button::PRESS)
+                    {
+                        m_settings.Set(SETTING_CUR_BRIGHTNESS, m_settings.Get(SETTING_MIN_BRIGHTNESS));
+                    }
+                    else
+                    {
+                        m_settings.Set(SETTING_CUR_BRIGHTNESS, m_settings.Get(SETTING_MAX_BRIGHTNESS));
+                    }
+                }
+
+                m_leds.setBrightness(m_settings.Get(SETTING_CUR_BRIGHTNESS));
             }
         };
     }

@@ -32,7 +32,7 @@ class Button
         bool canRepeat{false};
 
         // values below are in milliseconds
-        int repeatRate{250};
+        int repeatRate{100};
         int delayBeforeRepeat{350};
         int delayBeforePress{0}; // used for button combinations
         int debounceTime{20};
@@ -67,6 +67,11 @@ class Button
             CheckForPinStateChange();
             CheckForEventsToSend();
         }
+    }
+
+    bool IsPressed()
+    {
+        return m_enabled && m_isPressed;
     }
 
   private:
