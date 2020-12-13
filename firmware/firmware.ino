@@ -13,6 +13,7 @@ enum HardwareConfig_e
     PIN_BTN_COLOR = 5,      // pin "A5" -- "CLR" on PCB
     PIN_BTN_BRIGHTNESS = 6, // pin "6" -- "BRT" on PCB
     NUM_BTNS = 4,
+    NUM_DIGITS = 6,
 
     HOLD_SET_TIME_BTN_DELAY = 1000,
     HELD_BTN_DELAY = 2500,
@@ -33,7 +34,10 @@ void setup()
     Adafruit_NeoPixel leds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ400);
     leds.begin(); // initialize NeoPixel library
 
-    // The idea in this file is to keep it mostly Arduino-specific 
+    // The idea in this file is to keep it mostly Arduino-specific,
+    // while all "real" clock functionality is contained within the
+    // Clock class
+
     Settings settings;
     Clock clock(leds, settings);
 

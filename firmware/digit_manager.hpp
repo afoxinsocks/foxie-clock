@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 
+using Numbers_t = std::vector<uint8_t>; // must always be NUM_DIGITS size
+
 class DigitManager
 {
   private:
@@ -21,16 +23,14 @@ class DigitManager
         DIGIT_4_LED = 60,
         DIGIT_5_LED = 80,
         DIGIT_6_LED = 100,
-
-        NUM_DIGITS = 6,
     };
 
     Adafruit_NeoPixel &m_leds;
     Settings &m_settings;
 
-    // these store the value of each physical number display on the PCB
-    std::vector<uint8_t> m_numbers{0, 0, 0, 0, 0, 0};
-    std::vector<uint8_t> m_prevNumbers{0, 0, 0, 0, 0, 0};
+    // these are the value of each physical number that can be displayed
+    // For a Foxie Clock, a "Digit" can only be 0-9.
+    Numbers_t m_numbers;
 
     // shared pointers used so that destructing automatically deletes the digit
     std::vector<std::shared_ptr<Digit>> m_digits;
@@ -38,10 +38,12 @@ class DigitManager
   public:
     DigitManager(Adafruit_NeoPixel &leds, Settings &settings) : m_leds(leds), m_settings(settings)
     {
-        CreateDigitDisplay();
+        m_numbers.resize(NUM_DIGITS, 0);
+
+        CreateDigits();
     }
 
-    void CreateDigitDisplay()
+    void CreateDigits()
     {
         m_digits.clear();
 
@@ -53,44 +55,17 @@ class DigitManager
         m_digits.push_back(CreateDigit(DIGIT_6_LED));
     }
 
-    void UpdateDigitsFromRTC()
+    void Display(const Numbers_t numbers = {})
     {
-        rtc_hal_update();
-
-        if (m_settings.Get(SETTING_24_HOUR_MODE) == 1)
+        if (!numbers.empty())
         {
-            m_numbers[0] = rtc_hal_hour() / 10;
-            m_numbers[1] = rtc_hal_hour() % 10;
-        }
-        else
-        {
-            m_numbers[0] = rtc_hal_hourFormat12() / 10;
-            m_numbers[1] = rtc_hal_hourFormat12() % 10;
-
-            if (m_numbers[0] == 0)
-            {
-                // disable leading 0 for 12 hour mode
-                m_numbers[0] = Digit::INVALID;
-            }
+            m_numbers = numbers;
         }
 
-        m_numbers[2] = rtc_hal_minute() / 10;
-        m_numbers[3] = rtc_hal_minute() % 10;
-
-        m_numbers[4] = rtc_hal_second() / 10;
-        m_numbers[5] = rtc_hal_second() % 10;
-
-        Update();
-    }
-
-    void Update()
-    {
         for (size_t i = 0; i < NUM_DIGITS; ++i)
         {
             m_digits[i]->Display(m_numbers[i]);
         }
-
-        m_prevNumbers = m_numbers;
     }
 
   private:
