@@ -52,6 +52,7 @@ class Digit
     int m_first;
     int m_color;
     float m_brightness{1.0f};
+    int m_currentNumDisplayed{INVALID};
 
   public:
     Digit(Adafruit_NeoPixel &leds, const int firstLED, const int onColor)
@@ -59,7 +60,7 @@ class Digit
     {
     }
 
-    virtual void Display(const int num, const bool skipErase = false) = 0;
+    virtual void Display(const int num) = 0;
 
     void AllOff()
     {
@@ -74,6 +75,11 @@ class Digit
         m_color = newColor;
     }
 
+    int GetColor()
+    {
+        return m_color;
+    }
+
     void SetBrightness(const float brightness)
     {
         if (brightness > 1.0f)
@@ -84,9 +90,9 @@ class Digit
         m_brightness = brightness;
     }
 
-    int GetColor()
+    int GetNumDisplayed()
     {
-        return m_color;
+        return m_currentNumDisplayed;
     }
 
     void SetPixel(const int pixelNum, const int color)
@@ -104,12 +110,9 @@ class EdgeLitDigit : public Digit
     using Digit::Digit;
 
   public:
-    virtual void Display(const int num, const bool skipErase)
+    virtual void Display(const int num)
     {
-        if (!skipErase)
-        {
-            AllOff();
-        }
+        AllOff();
 
         if (num >= 0 && num <= 9)
         {
@@ -117,6 +120,8 @@ class EdgeLitDigit : public Digit
             SetPixel(m_first + (row * 2) - 2, m_color);
             SetPixel(m_first + (row * 2) - 1, m_color);
         }
+
+        m_currentNumDisplayed = num;
     }
 };
 
@@ -127,7 +132,7 @@ class DisplayDigit : public Digit
     using Digit::Digit;
 
   public:
-    virtual void Display(const int num, const bool skipErase)
+    virtual void Display(const int num)
     {
         if (num >= 0 && num <= 9)
         {
@@ -135,7 +140,7 @@ class DisplayDigit : public Digit
             for (int i = 0; i < LEDS_PER_DIGIT; ++i)
             {
                 const int col = (data[i] == 0 ? OFF_COLOR : m_color);
-                if (col != OFF_COLOR || !skipErase)
+                if (col != OFF_COLOR)
                 {
                     SetPixel(m_first + i, col);
                 }
@@ -145,6 +150,8 @@ class DisplayDigit : public Digit
         {
             AllOff();
         }
+
+        m_currentNumDisplayed = num;
     }
 
   private:

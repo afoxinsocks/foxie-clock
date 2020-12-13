@@ -224,11 +224,6 @@ class Clock
         };
 
         m_btnColor.config.handlerFunc = [&](const Button::Event_e evt) {
-            if (m_btnAnimationMode.IsPressed())
-            {
-                return;
-            }
-
             if (evt == Button::REPEAT || evt == Button::RELEASE)
             {
                 m_settings.Set(SETTING_COLOR, (m_settings.Get(SETTING_COLOR) + 8) & 0xFF);

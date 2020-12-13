@@ -134,7 +134,7 @@ class AnimatorCycleFlowLeft : public Animator
     {
         SetWheelColor(m_wheelColor + 6);
         m_digits[5]->SetColor(ColorWheel(m_wheelColor));
-        if (m_lastSecond % 10 == 9)
+        if (m_digits[5]->GetNumDisplayed() == 9)
         {
             for (int i = 0; i < 5; ++i)
             {

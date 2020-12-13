@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <functional>
 #include <vector>
 
@@ -52,26 +53,31 @@ class Button
         }
     }
 
-    void SetEnabled(const bool enabled)
+    void Update() // Called repeatedly by owner
     {
-        m_enabled = enabled;
-        m_timeInState.Reset();
-        m_isPressed = false;
-        m_wasPressed = false;
-    }
-
-    void Update()
-    {
-        if (m_enabled)
+        if (m_enabled && !AreOtherButtonsPressed())
         {
             CheckForPinStateChange();
             CheckForEventsToSend();
         }
     }
 
+    void SetEnabled(const bool enabled)
+    {
+        m_enabled = enabled;
+        Reset();
+    }
+
     bool IsPressed()
     {
         return m_enabled && m_isPressed;
+    }
+
+    void Reset()
+    {
+        m_timeInState.Reset();
+        m_isPressed = false;
+        m_wasPressed = false;
     }
 
   private:
@@ -132,5 +138,19 @@ class Button
             state = state && (digitalRead(pin) == 0);
         }
         return state;
+    }
+
+    bool AreOtherButtonsPressed()
+    {
+        std::vector<Pins_e> pins = {PIN_BTN_H, PIN_BTN_M, PIN_BTN_C, PIN_BTN_H};
+        for (auto pin : pins)
+        {
+            if (std::find(m_pins.begin(), m_pins.end(), pin) == m_pins.end() && digitalRead(pin) == 0)
+            {
+                Reset();
+                return true;
+            }
+        }
+        return false;
     }
 };
