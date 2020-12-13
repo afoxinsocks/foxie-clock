@@ -25,25 +25,20 @@ class DigitManager
         NUM_DIGITS = 6,
     };
 
-    enum
-    {
-        FADE_TIME_MS = 600,
-    };
-
     Adafruit_NeoPixel &m_leds;
+    Settings &m_settings;
+
+    // these store the value of each physical number display on the PCB
+    std::vector<uint8_t> m_numbers{0, 0, 0, 0, 0, 0};
+    std::vector<uint8_t> m_prevNumbers{0, 0, 0, 0, 0, 0};
+
     // shared pointers used so that destructing automatically deletes the digit
     std::vector<std::shared_ptr<Digit>> m_digits;
 
   public:
-    // these store the value of each physical number display on the PCB
-    // and can be updated directly for ease of use
-    std::vector<uint8_t> numbers{0, 0, 0, 0, 0, 0}, prevNumbers;
-    bool scalingNumbers[6] = {false};
-
-    DigitManager(Adafruit_NeoPixel &leds) : m_leds(leds)
+    DigitManager(Adafruit_NeoPixel &leds, Settings &settings) : m_leds(leds), m_settings(settings)
     {
         CreateDigitDisplay();
-        prevNumbers = numbers;
     }
 
     void CreateDigitDisplay()
@@ -58,81 +53,62 @@ class DigitManager
         m_digits.push_back(CreateDigit(DIGIT_6_LED));
     }
 
-    void Draw()
+    void UpdateDigitsFromRTC()
+    {
+        rtc_hal_update();
+
+        if (m_settings.Get(SETTING_24_HOUR_MODE) == 1)
+        {
+            m_numbers[0] = rtc_hal_hour() / 10;
+            m_numbers[1] = rtc_hal_hour() % 10;
+        }
+        else
+        {
+            m_numbers[0] = rtc_hal_hourFormat12() / 10;
+            m_numbers[1] = rtc_hal_hourFormat12() % 10;
+
+            if (m_numbers[0] == 0)
+            {
+                // disable leading 0 for 12 hour mode
+                m_numbers[0] = Digit::INVALID;
+            }
+        }
+
+        m_numbers[2] = rtc_hal_minute() / 10;
+        m_numbers[3] = rtc_hal_minute() % 10;
+
+        m_numbers[4] = rtc_hal_second() / 10;
+        m_numbers[5] = rtc_hal_second() % 10;
+
+        Update();
+    }
+
+    void Update()
     {
         for (size_t i = 0; i < NUM_DIGITS; ++i)
         {
-            if (prevNumbers[i] != numbers[i])
-            {
-                scalingNumbers[i] = true;
-            }
-
-            if (IsFadeWindow() && scalingNumbers[i] && Settings::Get(SETTING_TRANSITION_TYPE) == 1)
-            {
-                const float halfFadeTime = FADE_TIME_MS / 2;
-
-                // first half of fade, just before the second has flipped over
-                float positionThroughFade = ((rtc_hal_millis() - (1000.0f - halfFadeTime)) / halfFadeTime) / 2;
-
-                if (rtc_hal_millis() < halfFadeTime)
-                {
-                    // halfway through, just after the second has flipped over
-                    positionThroughFade = 0.5f + ((rtc_hal_millis() / halfFadeTime) / 2);
-                }
-
-                m_digits[i]->SetBrightness(1.0f - positionThroughFade);
-                m_digits[i]->Draw(prevNumbers[i]);
-
-                bool fadeNewDigit = Settings::Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT;
-
-                if (!fadeNewDigit)
-                {
-                    positionThroughFade = 1.0f;
-                }
-
-                m_digits[i]->SetBrightness(positionThroughFade);
-
-                m_digits[i]->Draw(numbers[i], true);
-            }
-            else
-            {
-                m_digits[i]->SetBrightness(1.0f);
-                m_digits[i]->Draw(numbers[i]);
-                scalingNumbers[i] = false;
-            }
+            // m_digits[i]->SetBrightness(1.0f);
+            m_digits[i]->Display(m_numbers[i]);
         }
 
-        if (!IsFadeWindow())
-        {
-            prevNumbers = numbers;
-        }
-    }
-
-    void SetDigitColor(const size_t digitNum, const uint32_t color)
-    {
-        m_digits[digitNum]->SetColor(color);
-    }
-
-    int GetDigitColor(const size_t digitNum)
-    {
-        return m_digits[digitNum]->GetColor();
+        m_prevNumbers = m_numbers;
     }
 
   private:
-    bool IsFadeWindow()
-    {
-        return rtc_hal_millis() < (FADE_TIME_MS / 2) || rtc_hal_millis() > (1000 - (FADE_TIME_MS / 2));
-    }
+    // bool IsFadeWindow()
+    // {
+    //     return rtc_hal_millis() < (FADE_TIME_MS / 2) || rtc_hal_millis() > (1000 - (FADE_TIME_MS / 2));
+    // }
 
     std::shared_ptr<Digit> CreateDigit(const LEDNumbers_e firstLED)
     {
-        if (Settings::Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
+        if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
         {
-            return std::make_shared<EdgeLitDigit>(m_leds, firstLED, Settings::Get(SETTING_COLOR));
+            return std::make_shared<EdgeLitDigit>(m_leds, firstLED, m_settings.Get(SETTING_COLOR));
         }
         else // DT_PIXELS
         {
-            return std::make_shared<DisplayDigit>(m_leds, firstLED, Settings::Get(SETTING_COLOR));
+            return std::make_shared<DisplayDigit>(m_leds, firstLED, m_settings.Get(SETTING_COLOR));
         }
     }
 };

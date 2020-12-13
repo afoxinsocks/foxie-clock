@@ -17,6 +17,7 @@ void rtc_hal_init()
     // rtc_hal_setTime() ...
 
 #ifdef UseDS3232
+    Wire.begin();
     bool h12, PM;
     rtc_hal_setTime(BackupClock.getHour(h12, PM), BackupClock.getMinute(), BackupClock.getSecond());
 #endif

@@ -31,7 +31,6 @@ enum SettingNames_e
 // to 256 total settings.
 class Settings
 {
-  public:
   private:
     enum
     {
@@ -40,26 +39,13 @@ class Settings
 
     uint32_t m_storage[SETTINGS_SIZE] = {0};
 
-    static Settings *m_inst;
-
   public:
     Settings()
     {
-        m_inst = this;
         Load();
-
-        // this should only happen on a fresh board
-        if (Get(SETTING_DIGIT_TYPE) > 2)
-        {
-            ResetToDefaults();
-        }
-    }
-    virtual ~Settings()
-    {
-        m_inst = nullptr;
     }
 
-    static void ResetToDefaults()
+    void Reset()
     {
         Set(SETTING_DIGIT_TYPE, 1); // 1 is edge lit (acrylics), 2 is pixel display
         Set(SETTING_CUR_BRIGHTNESS, 64);
@@ -76,23 +62,25 @@ class Settings
     }
 
     // only call after all settings have been updated
-    static void Save()
+    void Save()
     {
+#ifdef FOXIE_ARTEMIS
         // for Artemis, we're going to write the entire block at once
         // to save write cycles
         const size_t blockSize = SETTINGS_SIZE * sizeof(uint32_t);
         const size_t maxAllowedSize = blockSize;
-        writeBlockToEEPROM(0, (const uint8_t *)m_inst->m_storage, blockSize, maxAllowedSize);
+        writeBlockToEEPROM(0, (const uint8_t *)m_storage, blockSize, maxAllowedSize);
+#endif
     }
 
-    static uint32_t Get(const SettingNames_e name)
+    uint32_t Get(const SettingNames_e name)
     {
-        return m_inst->m_storage[(const uint32_t)name];
+        return m_storage[(const uint32_t)name];
     }
 
-    static void Set(const SettingNames_e name, const uint32_t value)
+    void Set(const SettingNames_e name, const uint32_t value)
     {
-        m_inst->m_storage[(const uint32_t)name] = value;
+        m_storage[(const uint32_t)name] = value;
     }
 
   private:

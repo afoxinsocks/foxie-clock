@@ -59,7 +59,7 @@ class Digit
     {
     }
 
-    virtual void Draw(const int num, const bool skipErase = false) = 0;
+    virtual void Display(const int num, const bool skipErase = false) = 0;
 
     void AllOff()
     {
@@ -102,7 +102,7 @@ class EdgeLitDigit : public Digit
     using Digit::Digit;
 
   public:
-    virtual void Draw(const int num, const bool skipErase)
+    virtual void Display(const int num, const bool skipErase)
     {
         if (!skipErase)
         {
@@ -125,7 +125,7 @@ class DisplayDigit : public Digit
     using Digit::Digit;
 
   public:
-    virtual void Draw(const int num, const bool skipErase)
+    virtual void Display(const int num, const bool skipErase)
     {
         if (num >= 0 && num <= 9)
         {
