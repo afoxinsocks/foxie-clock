@@ -1,53 +1,37 @@
-#include <Wire.h>
-#include <vector>
-
 #define FOXIE_ARTEMIS
 
 enum HardwareConfig_e
 {
-    PIN_LEDS = 2, // pin "A2" on RedBoard Nano, "LEDs" on the PCB
+    PIN_FOR_LEDS = 2, // pin "A2" -- "LEDs" on PCB
     NUM_LEDS = 122,
-
-    PIN_BTN_HOUR = 3,       // pin "A3" -- "HR" on PCB
-    PIN_BTN_MIN = 4,        // pin "4" -- "MIN" on PCB
-    PIN_BTN_COLOR = 5,      // pin "A5" -- "CLR" on PCB
-    PIN_BTN_BRIGHTNESS = 6, // pin "6" -- "BRT" on PCB
-    NUM_BTNS = 4,
     NUM_DIGITS = 6,
-
-    HOLD_SET_TIME_BTN_DELAY = 1000,
-    HELD_BTN_DELAY = 2500,
 };
 
-#include "Adafruit_NeoPixel.h"
-#include "button.hpp"
+enum PinButtonMapping_e 
+{
+    PIN_BTN_H = 3, // pin "A3" -- "HR" on PCB
+    PIN_BTN_M = 4, // pin "4" -- "MIN" on PCB
+    PIN_BTN_C = 5, // pin "A5" -- "CLR" on PCB
+    PIN_BTN_B = 6, // pin "6" -- "BRT" on PCB
+    NUM_BTNS = 4,
+};
+
 #include "clock.hpp"
-#include "digit_manager.hpp"
-#include "rtc_hal.hpp"
-#include "settings.hpp"
 
 void setup()
 {
-    Serial.begin(115200);
-    rtc_hal_init();
-
-    Adafruit_NeoPixel leds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ400);
-    leds.begin(); // initialize NeoPixel library
-
     // The idea in this file is to keep it mostly Arduino-specific,
     // while all "real" clock functionality is contained within the
-    // Clock class
+    // Clock class in a very "clean" way. That's the idea, anyway...
 
-    Settings settings;
-    Clock clock(leds, settings);
-
+    Clock clock;
     while (true)
     {
-        clock.Process();
+        clock.Loop();
     }
 }
 
 void loop()
 {
-    // will never be used; we use the while(true) loop above instead
+    // never used, see Clock::Loop() in clock.hpp instead
 }

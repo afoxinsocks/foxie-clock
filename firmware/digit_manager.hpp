@@ -5,6 +5,8 @@
 #include <vector>
 
 using Numbers_t = std::vector<uint8_t>; // must always be NUM_DIGITS size
+using DigitPtr_t = std::shared_ptr<Digit>;
+using DigitPtrs_t = std::vector<DigitPtr_t>;
 
 class DigitManager
 {
@@ -33,7 +35,7 @@ class DigitManager
     Numbers_t m_numbers;
 
     // shared pointers used so that destructing automatically deletes the digit
-    std::vector<std::shared_ptr<Digit>> m_digits;
+    DigitPtrs_t m_digits;
 
   public:
     DigitManager(Adafruit_NeoPixel &leds, Settings &settings) : m_leds(leds), m_settings(settings)
@@ -69,7 +71,7 @@ class DigitManager
     }
 
   private:
-    std::shared_ptr<Digit> CreateDigit(const LEDNumbers_e firstLED)
+    DigitPtr_t CreateDigit(const LEDNumbers_e firstLED)
     {
         if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
         {

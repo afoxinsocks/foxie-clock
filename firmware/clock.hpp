@@ -1,10 +1,11 @@
 #pragma once
+#include <memory>
+
 #include "Adafruit_NeoPixel.h"
-#include "button.hpp"
+#include "buttons.hpp"
 #include "digit_manager.hpp"
 #include "rtc_hal.hpp"
 #include "settings.hpp"
-#include <memory>
 
 class Clock
 {
@@ -16,18 +17,31 @@ class Clock
         STATE_DISPLAY_VALUE,
     };
 
-    Adafruit_NeoPixel &m_leds;
-    Settings &m_settings;
+    Adafruit_NeoPixel m_leds{NUM_LEDS, PIN_FOR_LEDS, NEO_GRB + NEO_KHZ400};
+    Settings m_settings;
+    Buttons m_buttons;
     DigitManager m_digitMgr;
     ClockState_e m_state{STATE_NORMAL};
 
   public:
-    Clock(Adafruit_NeoPixel &leds, Settings &settings) : m_leds(leds), m_settings(settings), m_digitMgr(leds, settings)
+    Clock() : m_digitMgr(m_leds, m_settings)
     {
+        Serial.begin(115200);
+        rtc_hal_init();
+
+        m_leds.begin();
         m_leds.setBrightness(m_settings.Get(SETTING_CUR_BRIGHTNESS));
     }
 
-    void Process()
+    void Loop()
+    {
+        m_buttons.CheckForEvents();
+
+        DisplayDigits();
+    }
+
+  private:
+    void DisplayDigits()
     {
         if (m_state == STATE_NORMAL)
         {
@@ -42,8 +56,7 @@ class Clock
         m_leds.show();
     }
 
-  private:
-    Numbers_t GetNumbersFromRTC()
+    Numbers_t GetNumbersFromRTC() const
     {
         Numbers_t numbers(NUM_DIGITS, 0);
 

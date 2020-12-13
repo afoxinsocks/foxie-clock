@@ -73,7 +73,7 @@ class Settings
 #endif
     }
 
-    uint32_t Get(const SettingNames_e name)
+    uint32_t Get(const SettingNames_e name) const
     {
         return m_storage[(const uint32_t)name];
     }
