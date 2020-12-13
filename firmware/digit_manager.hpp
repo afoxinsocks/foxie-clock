@@ -57,12 +57,9 @@ class DigitManager
         m_digits.push_back(CreateDigit(DIGIT_6_LED));
     }
 
-    void Display(const Numbers_t numbers = {})
+    void Display(const Numbers_t numbers)
     {
-        if (!numbers.empty())
-        {
-            m_numbers = numbers;
-        }
+        m_numbers = numbers;
 
         for (size_t i = 0; i < NUM_DIGITS; ++i)
         {
