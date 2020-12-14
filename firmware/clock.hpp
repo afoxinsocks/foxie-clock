@@ -32,8 +32,10 @@ class Clock
     Button m_btnAnimationMode{PIN_BTN_M};
     Button m_btnColor{PIN_BTN_C};
     Button m_btnBrightness{PIN_BTN_B};
+    Button m_btnToggle24HMode{{PIN_BTN_H, PIN_BTN_M}};
     Button m_btnToggleDisplay{{PIN_BTN_M, PIN_BTN_C}};
     Button m_btnFlipDisplay{{PIN_BTN_C, PIN_BTN_B}};
+
     std::vector<Button *> m_buttons;
 
     Numbers_t m_alternateNumbers;
@@ -58,6 +60,7 @@ class Clock
 
         // special behavior buttons that require being held to activate
         m_btnSetTime.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
+        m_btnToggle24HMode.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
         m_btnToggleDisplay.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
         m_btnFlipDisplay.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
 
@@ -69,6 +72,7 @@ class Clock
         m_buttons.push_back(&m_btnAnimationMode);
         m_buttons.push_back(&m_btnColor);
         m_buttons.push_back(&m_btnBrightness);
+        m_buttons.push_back(&m_btnToggle24HMode);
         m_buttons.push_back(&m_btnToggleDisplay);
         m_buttons.push_back(&m_btnFlipDisplay);
 
@@ -118,13 +122,13 @@ class Clock
         }
         else
         {
-            numbers[1] = rtc_hal_hourFormat12() % 10;
-
             // don't display leading zero in 12H mode
-            if (numbers[0] > 0)
+            if (rtc_hal_hourFormat12() >= 10)
             {
                 numbers[0] = rtc_hal_hourFormat12() / 10;
             }
+
+            numbers[1] = rtc_hal_hourFormat12() % 10;
         }
 
         numbers[2] = rtc_hal_minute() / 10;
@@ -259,6 +263,19 @@ class Clock
             if (evt == Button::RELEASE)
             {
                 m_settings.Save();
+            }
+        };
+
+        ///////////////////////////////////////////////////////////////////////
+        // Toggle display button, switches between pixel and edge lit
+        ///////////////////////////////////////////////////////////////////////
+        m_btnToggle24HMode.config.handlerFunc = [&](const Button::Event_e evt) {
+            if (evt == Button::PRESS)
+            {
+                const auto mode = m_settings.Get(SETTING_24_HOUR_MODE);
+                m_settings.Set(SETTING_24_HOUR_MODE, mode == 0 ? 1 : 0);
+                m_settings.Save();
+                m_digitMgr.CreateDigits();
             }
         };
 
