@@ -34,6 +34,7 @@ class Clock
     Button m_btnBrightness{PIN_BTN_B};
     Button m_btnToggle24HMode{{PIN_BTN_H, PIN_BTN_M}};
     Button m_btnToggleDisplay{{PIN_BTN_M, PIN_BTN_C}};
+    Button m_btnToggleBlinkers{{PIN_BTN_M, PIN_BTN_B}};
     Button m_btnFlipDisplay{{PIN_BTN_C, PIN_BTN_B}};
 
     std::vector<Button *> m_buttons;
@@ -62,6 +63,7 @@ class Clock
         m_btnSetTime.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
         m_btnToggle24HMode.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
         m_btnToggleDisplay.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
+        m_btnToggleBlinkers.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
         m_btnFlipDisplay.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
 
         // store all our buttons in a vector so CheckForButtonEvents can
@@ -74,6 +76,7 @@ class Clock
         m_buttons.push_back(&m_btnBrightness);
         m_buttons.push_back(&m_btnToggle24HMode);
         m_buttons.push_back(&m_btnToggleDisplay);
+        m_buttons.push_back(&m_btnToggleBlinkers);
         m_buttons.push_back(&m_btnFlipDisplay);
 
         ConfigureButtonHandlers();
@@ -267,7 +270,7 @@ class Clock
         };
 
         ///////////////////////////////////////////////////////////////////////
-        // Toggle display button, switches between pixel and edge lit
+        // Toggle 24H mode on and off by pressing H+M
         ///////////////////////////////////////////////////////////////////////
         m_btnToggle24HMode.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
@@ -280,7 +283,7 @@ class Clock
         };
 
         ///////////////////////////////////////////////////////////////////////
-        // Toggle display button, switches between pixel and edge lit
+        // Toggle display between PXL and Edge lit using C+B
         ///////////////////////////////////////////////////////////////////////
         m_btnToggleDisplay.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
@@ -300,7 +303,19 @@ class Clock
         };
 
         ///////////////////////////////////////////////////////////////////////
-        // Brightness button, when held (repeat) it will max at full brightness
+        // Toggle blinkers on and off by pressing B+C
+        ///////////////////////////////////////////////////////////////////////
+        m_btnToggleBlinkers.config.handlerFunc = [&](const Button::Event_e evt) {
+            if (evt == Button::PRESS)
+            {
+                const auto mode = m_settings.Get(SETTING_BLINKING_SEPARATORS);
+                m_settings.Set(SETTING_BLINKING_SEPARATORS, mode == 0 ? 1 : 0);
+                m_settings.Save();
+            }
+        };
+
+        ///////////////////////////////////////////////////////////////////////
+        // Brightness button, when held, stop changing when at full brightness
         ///////////////////////////////////////////////////////////////////////
         m_btnBrightness.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS || evt == Button::REPEAT)
@@ -325,7 +340,7 @@ class Clock
         };
 
         ///////////////////////////////////////////////////////////////////////
-        // Flip display combination button
+        // Flip display by pressing C+B
         ///////////////////////////////////////////////////////////////////////
         m_btnFlipDisplay.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)

@@ -59,11 +59,17 @@ class Blinkers
 
     void TurnOffBlinkers()
     {
-        m_leds.setPixelColor(BLINK_DIGIT_TYPE_1_LED_1, 0);
-        m_leds.setPixelColor(BLINK_DIGIT_TYPE_1_LED_2, 0);
-        m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_1, 0);
-        m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_2, 0);
-        m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_3, 0);
-        m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_4, 0);
+        if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
+        {
+            m_leds.setPixelColor(BLINK_DIGIT_TYPE_1_LED_1, 0);
+            m_leds.setPixelColor(BLINK_DIGIT_TYPE_1_LED_2, 0);
+        }
+        else
+        {
+            m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_1, 0);
+            m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_2, 0);
+            m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_3, 0);
+            m_leds.setPixelColor(BLINK_DIGIT_TYPE_2_LED_4, 0);
+        }
     }
 };
