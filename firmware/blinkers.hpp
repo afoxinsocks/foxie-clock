@@ -39,7 +39,6 @@ class Blinkers
         }
     }
 
-  private:
     void TurnOnBlinkers()
     {
         const int blinkColor = ColorWheel(m_settings.Get(SETTING_COLOR));

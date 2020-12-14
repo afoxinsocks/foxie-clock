@@ -288,6 +288,8 @@ class Clock
         m_btnToggleDisplay.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
             {
+                m_blinkers.TurnOffBlinkers();
+
                 if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
                 {
                     m_settings.Set(SETTING_DIGIT_TYPE, DT_PIXELS);
