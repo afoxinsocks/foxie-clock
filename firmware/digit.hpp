@@ -102,7 +102,6 @@ using DigitPtrs_t = std::vector<DigitPtr_t>;
 // lights two LEDs at a time under each numeral
 class EdgeLitDigit : public Digit
 {
-  private:
     using Digit::Digit;
 
   public:
@@ -122,9 +121,8 @@ class EdgeLitDigit : public Digit
 };
 
 // draws an entire number on the display using the available LEDs
-class DisplayDigit : public Digit
+class PXLDigit : public Digit
 {
-  private:
     using Digit::Digit;
 
   public:

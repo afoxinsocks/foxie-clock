@@ -75,7 +75,7 @@ class DigitManager
         }
         else // DT_PIXELS
         {
-            return std::make_shared<DisplayDigit>(m_leds, firstLED, ColorWheel(m_settings.Get(SETTING_COLOR)));
+            return std::make_shared<PXLDigit>(m_leds, firstLED, ColorWheel(m_settings.Get(SETTING_COLOR)));
         }
     }
 };

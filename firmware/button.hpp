@@ -87,7 +87,6 @@ class Button
         {
             // do nothing while we're debouncing because this is
             // when the button can physically bounce.
-
             return;
         }
 

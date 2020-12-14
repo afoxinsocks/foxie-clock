@@ -41,6 +41,8 @@ class Clock
     {
         Serial.begin(115200);
         rtc_hal_init();
+
+        // initialize Adafruit's Neopixel library
         m_leds.begin();
         m_leds.setBrightness(m_settings.Get(SETTING_CUR_BRIGHTNESS));
 
@@ -51,10 +53,12 @@ class Clock
         m_btnColor.config.repeatRate = 200;
         m_btnBrightness.config.canRepeat = true;
 
-        // special behavior buttons
+        // special behavior buttons that require being held to activate
         m_btnSetTime.config.delayBeforePress = DELAY_FOR_SET_TIME_MODE;
         m_btnToggleDisplay.config.delayBeforePress = DELAY_FOR_TOGGLE_DISPLAY;
 
+        // store all our buttons in a vector so CheckForButtonEvents can
+        // use a for loop to check all the buttons
         m_buttons.push_back(&m_btnSetTime);
         m_buttons.push_back(&m_btnHour);
         m_buttons.push_back(&m_btnMinute);
@@ -72,20 +76,56 @@ class Clock
         DisplayDigits();
     }
 
-    void AlternateDisplay(unsigned int value)
+    void DisplayTemporarily(const unsigned int value)
     {
         m_state = STATE_ALT_DISPLAY;
-        m_timeInAltDisplayMode.Reset();
         m_digitMgr.UseAnimation(ANIM_ALT_DISPLAY);
+        m_timeInAltDisplayMode.Reset();
+        m_alternateNumbers = ConvertValueToSeparateNumbers(value);
+    }
 
-        m_alternateNumbers.resize(NUM_DIGITS, Digit::INVALID);
-
-        int digitNum = 5;
+    Numbers_t ConvertValueToSeparateNumbers(unsigned int value) const
+    {
+        Numbers_t numbers(NUM_DIGITS, Digit::INVALID);
+        int digitNum = NUM_DIGITS - 1;
         do
         {
-            m_alternateNumbers[digitNum--] = value % 10;
+            numbers[digitNum--] = value % 10;
             value /= 10;
         } while (value && digitNum >= 0);
+        return numbers;
+    }
+
+    Numbers_t GetNumbersFromRTC() const
+    {
+        Numbers_t numbers(NUM_DIGITS, Digit::INVALID);
+
+        // on a Foxie Clock, the numbers are laid out this way:
+        // numbers[0] is the leftmost digit
+        // numbers[5] is the rightmost digit
+        if (m_settings.Get(SETTING_24_HOUR_MODE) == 1)
+        {
+            numbers[0] = rtc_hal_hour() / 10;
+            numbers[1] = rtc_hal_hour() % 10;
+        }
+        else
+        {
+            numbers[1] = rtc_hal_hourFormat12() % 10;
+
+            // don't display leading zero in 12H mode
+            if (numbers[0] > 0)
+            {
+                numbers[0] = rtc_hal_hourFormat12() / 10;
+            }
+        }
+
+        numbers[2] = rtc_hal_minute() / 10;
+        numbers[3] = rtc_hal_minute() % 10;
+
+        numbers[4] = rtc_hal_second() / 10;
+        numbers[5] = rtc_hal_second() % 10;
+
+        return numbers;
     }
 
   private:
@@ -105,7 +145,7 @@ class Clock
         {
         case STATE_NORMAL:
             rtc_hal_update();
-            // no break -- fall through
+            // no break -- fall through to STATE_SET_TIME
 
         case STATE_SET_TIME:
             numbers = GetNumbersFromRTC();
@@ -125,43 +165,15 @@ class Clock
         m_leds.show();
     }
 
-    Numbers_t GetNumbersFromRTC() const
-    {
-        Numbers_t numbers(NUM_DIGITS, 0);
-
-        // on a Foxie Clock, the numbers are laid out this way:
-        // numbers[0] is the leftmost digit
-        // numbers[5] is the rightmost digit
-        if (m_settings.Get(SETTING_24_HOUR_MODE) == 1)
-        {
-            numbers[0] = rtc_hal_hour() / 10;
-            numbers[1] = rtc_hal_hour() % 10;
-        }
-        else
-        {
-            numbers[0] = rtc_hal_hourFormat12() / 10;
-            numbers[1] = rtc_hal_hourFormat12() % 10;
-
-            if (numbers[0] == 0)
-            {
-                // disable leading 0 for 12 hour mode
-                numbers[0] = Digit::INVALID;
-            }
-        }
-
-        numbers[2] = rtc_hal_minute() / 10;
-        numbers[3] = rtc_hal_minute() % 10;
-
-        numbers[4] = rtc_hal_second() / 10;
-        numbers[5] = rtc_hal_second() % 10;
-
-        return numbers;
-    }
-
     void ConfigureButtonHandlers()
     {
-        // TODO: Add a bit about what I'm doing here with these lambda functions
+        // These C++ lambda are used as callbacks for each button and are
+        // called automatically by the Button class when events occur
+        // such as pressing a button, releasing it, repeat, etc.
 
+        ///////////////////////////////////////////////////////////////////////
+        // Set time button (H button, when held)
+        ///////////////////////////////////////////////////////////////////////
         m_btnSetTime.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
             {
@@ -194,6 +206,9 @@ class Clock
             }
         };
 
+        ///////////////////////////////////////////////////////////////////////
+        // Hour and minute buttons (only when in STATE_SET_TIME)
+        ///////////////////////////////////////////////////////////////////////
         m_btnHour.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::RELEASE)
             {
@@ -208,6 +223,9 @@ class Clock
             }
         };
 
+        ///////////////////////////////////////////////////////////////////////
+        // Animation button
+        ///////////////////////////////////////////////////////////////////////
         m_btnAnimationMode.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::RELEASE)
             {
@@ -218,10 +236,13 @@ class Clock
                 }
                 m_settings.Save();
 
-                AlternateDisplay(m_settings.Get(SETTING_ANIMATION_TYPE));
+                DisplayTemporarily(m_settings.Get(SETTING_ANIMATION_TYPE));
             }
         };
 
+        ///////////////////////////////////////////////////////////////////////
+        // Color button
+        ///////////////////////////////////////////////////////////////////////
         m_btnColor.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::REPEAT || evt == Button::RELEASE)
             {
@@ -235,6 +256,9 @@ class Clock
             }
         };
 
+        ///////////////////////////////////////////////////////////////////////
+        // Toggle display button, switches between pixel and edge lit
+        ///////////////////////////////////////////////////////////////////////
         m_btnToggleDisplay.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
             {
@@ -259,6 +283,9 @@ class Clock
             }
         };
 
+        ///////////////////////////////////////////////////////////////////////
+        // Brightness button, when held (repeat) it will max at full brightness
+        ///////////////////////////////////////////////////////////////////////
         m_btnBrightness.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS || evt == Button::REPEAT)
             {
