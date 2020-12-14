@@ -1,12 +1,12 @@
 #pragma once
 #include <memory>
 
-#include "Adafruit_NeoPixel.h"
 #include "animator.hpp"
 #include "blinkers.hpp"
 #include "button.hpp"
 #include "digit_manager.hpp"
 #include "elapsed_time.hpp"
+#include "reversible_neopixels.hpp"
 #include "rtc_hal.hpp"
 #include "settings.hpp"
 
@@ -20,8 +20,8 @@ class Clock
         STATE_ALT_DISPLAY,
     };
 
-    Adafruit_NeoPixel m_leds{NUM_LEDS, PIN_FOR_LEDS, NEO_GRB + NEO_KHZ400};
     Settings m_settings;
+    ReversibleNeopixels m_leds{m_settings, NUM_LEDS, PIN_FOR_LEDS, NEO_GRB + NEO_KHZ400};
     DigitManager m_digitMgr{m_leds, m_settings};
     Blinkers m_blinkers{m_leds, m_settings};
     ClockState_e m_state{STATE_NORMAL};
@@ -33,6 +33,7 @@ class Clock
     Button m_btnColor{PIN_BTN_C};
     Button m_btnBrightness{PIN_BTN_B};
     Button m_btnToggleDisplay{{PIN_BTN_M, PIN_BTN_C}};
+    Button m_btnFlipDisplay{{PIN_BTN_C, PIN_BTN_B}};
     std::vector<Button *> m_buttons;
 
     Numbers_t m_alternateNumbers;
@@ -56,8 +57,9 @@ class Clock
         m_btnBrightness.config.canRepeat = true;
 
         // special behavior buttons that require being held to activate
-        m_btnSetTime.config.delayBeforePress = DELAY_FOR_SET_TIME_MODE;
-        m_btnToggleDisplay.config.delayBeforePress = DELAY_FOR_TOGGLE_DISPLAY;
+        m_btnSetTime.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
+        m_btnToggleDisplay.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
+        m_btnFlipDisplay.config.delayBeforePress = DELAY_FOR_COMBINATION_BUTTONS;
 
         // store all our buttons in a vector so CheckForButtonEvents can
         // use a for loop to check all the buttons
@@ -68,6 +70,7 @@ class Clock
         m_buttons.push_back(&m_btnColor);
         m_buttons.push_back(&m_btnBrightness);
         m_buttons.push_back(&m_btnToggleDisplay);
+        m_buttons.push_back(&m_btnFlipDisplay);
 
         ConfigureButtonHandlers();
     }
@@ -265,8 +268,6 @@ class Clock
         m_btnToggleDisplay.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
             {
-                m_btnAnimationMode.SetEnabled(false);
-                m_btnColor.SetEnabled(false);
                 if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
                 {
                     m_settings.Set(SETTING_DIGIT_TYPE, DT_PIXELS);
@@ -278,11 +279,6 @@ class Clock
 
                 m_settings.Save();
                 m_digitMgr.CreateDigits();
-            }
-            else
-            {
-                m_btnAnimationMode.SetEnabled(true);
-                m_btnColor.SetEnabled(true);
             }
         };
 
@@ -308,6 +304,20 @@ class Clock
                 }
 
                 m_leds.setBrightness(m_settings.Get(SETTING_CUR_BRIGHTNESS));
+            }
+        };
+
+        ///////////////////////////////////////////////////////////////////////
+        // Flip display combination button
+        ///////////////////////////////////////////////////////////////////////
+        m_btnFlipDisplay.config.handlerFunc = [&](const Button::Event_e evt) {
+            if (evt == Button::PRESS)
+            {
+                const auto flip = m_settings.Get(SETTING_FLIP_DISPLAY);
+                m_settings.Set(SETTING_FLIP_DISPLAY, flip == 0 ? 1 : 0);
+
+                m_settings.Save();
+                m_digitMgr.CreateDigits();
             }
         };
     }
