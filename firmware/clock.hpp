@@ -3,6 +3,7 @@
 
 #include "Adafruit_NeoPixel.h"
 #include "animator.hpp"
+#include "blinkers.hpp"
 #include "button.hpp"
 #include "digit_manager.hpp"
 #include "elapsed_time.hpp"
@@ -21,7 +22,8 @@ class Clock
 
     Adafruit_NeoPixel m_leds{NUM_LEDS, PIN_FOR_LEDS, NEO_GRB + NEO_KHZ400};
     Settings m_settings;
-    DigitManager m_digitMgr;
+    DigitManager m_digitMgr{m_leds, m_settings};
+    Blinkers m_blinkers{m_leds, m_settings};
     ClockState_e m_state{STATE_NORMAL};
 
     Button m_btnSetTime{PIN_BTN_H};
@@ -37,7 +39,7 @@ class Clock
     ElapsedTime m_timeInAltDisplayMode;
 
   public:
-    Clock() : m_digitMgr(m_leds, m_settings)
+    Clock()
     {
         Serial.begin(115200);
         rtc_hal_init();
@@ -74,6 +76,9 @@ class Clock
     {
         CheckForButtonEvents();
         DisplayDigits();
+        m_blinkers.Update();
+
+        m_leds.show();
     }
 
     void DisplayTemporarily(const unsigned int value)
@@ -161,8 +166,6 @@ class Clock
             }
             break;
         }
-
-        m_leds.show();
     }
 
     void ConfigureButtonHandlers()

@@ -53,7 +53,7 @@ class DigitManager
 
     void UseAnimation(const AnimationType_e type)
     {
-        m_animator = AnimatorFactory(m_digits, type, m_settings.Get(SETTING_COLOR));
+        m_animator = AnimatorFactory(m_settings, m_digits, type, m_settings.Get(SETTING_COLOR));
     }
 
     void Display(const Numbers_t numbers)
