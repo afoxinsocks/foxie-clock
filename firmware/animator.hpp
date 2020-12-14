@@ -14,33 +14,67 @@ enum AnimationType_e
 
     // Add new types above here
     ANIM_TOTAL,
-    ANIM_SET_TIME,
+    ANIM_ALT_DISPLAY,
 };
 
 class Animator
 {
+  private:
+    int m_lastSecond;
+
   protected:
     DigitPtrs_t m_digits;
-    int m_lastSecond;
     uint8_t m_wheelColor;
+    bool m_isOncePerSecond{false};
+    Numbers_t m_lastNumbers;
+    Numbers_t m_currentNumbers;
 
   public:
+    enum Configuration_e
+    {
+        // this is the amount of time that we want to spend transitioning
+        // between old and new digits, in milliseconds
+        TRANSITION_TIME = 400,
+    };
+
     Animator(DigitPtrs_t digits, const uint8_t wheelColor) : m_digits(digits)
     {
         m_wheelColor = wheelColor;
         m_lastSecond = rtc_hal_second();
-        Go();
+
+        for (int i = 0; i < NUM_DIGITS; ++i)
+        {
+            m_digits[i]->AllOff();
+        }
+
+        m_lastNumbers = {Digit::INVALID, Digit::INVALID, Digit::INVALID,
+                         Digit::INVALID, Digit::INVALID, Digit::INVALID};
     }
+
     virtual ~Animator()
     {
     }
 
-    virtual void Go()
+    void Go(const Numbers_t &numbers)
     {
-        // does nothing except update the digit colors to the current setting
-        for (int i = 0; i < 6; ++i)
+        m_currentNumbers = numbers;
+
+        DoBrightnessChanges();
+
+        if (!IsOneColorChangePerSecond() || m_lastSecond != rtc_hal_second())
         {
-            m_digits[i]->SetColor(ColorWheel(m_wheelColor));
+            DoColorChanges();
+            m_lastSecond = rtc_hal_second();
+        }
+
+        for (int i = 0; i < NUM_DIGITS; ++i)
+        {
+            m_digits[i]->Display(numbers[i]);
+        }
+
+        if (!IsTransitioning())
+        {
+            m_lastNumbers = numbers;
         }
     };
 
@@ -55,25 +89,75 @@ class Animator
     {
         SetWheelColor(wheelColor);
     }
-};
 
-class AnimatorCycleAll : public Animator
+    virtual bool IsOneColorChangePerSecond()
+    {
+        return false;
+    }
+
+  protected:
+    // subclasses can do different things if they override these functions
+    virtual void DoColorChanges()
+    {
+        const int color = ColorWheel(m_wheelColor);
+        for (int i = 0; i < 6; ++i)
+        {
+            m_digits[i]->SetColor(color);
+        }
+    }
+
+    virtual void DoBrightnessChanges()
+    {
+        const bool isTransitioning = IsTransitioning();
+        for (int i = 0; i < NUM_DIGITS; ++i)
+        {
+            if (m_lastNumbers[i] != m_currentNumbers[i] && isTransitioning)
+            {
+                auto progress = TransitionProgress();
+                m_digits[i]->SetBrightness(1.0f - progress);
+                m_digits[i]->Display(m_lastNumbers[i]);
+
+                m_digits[i]->SetBrightness(progress);
+            }
+            else
+            {
+                m_digits[i]->Display(Digit::INVALID);
+                m_digits[i]->SetBrightness(1.0f);
+            }
+        }
+    }
+
+  private:
+    virtual bool IsTransitioning()
+    {
+        return rtc_hal_millis() < TRANSITION_TIME;
+    }
+
+    float TransitionProgress()
+    {
+        return (float)rtc_hal_millis() / TRANSITION_TIME;
+    }
+};
+using AnimatorPtr_t = std::shared_ptr<Animator>;
+
+class AnimatorCycleColors : public Animator
 {
     using Animator::Animator;
 
   public:
-    virtual void Go() override
+    virtual void DoColorChanges() override
     {
-        if (m_lastSecond != rtc_hal_second())
+        for (int i = 0; i < 6; ++i)
         {
-            for (int i = 0; i < 6; ++i)
-            {
 
-                m_wheelColor += 16;
-                m_digits[i]->SetColor(ColorWheel(m_wheelColor));
-            }
-            m_lastSecond = rtc_hal_second();
+            m_wheelColor += 16;
+            m_digits[i]->SetColor(ColorWheel(m_wheelColor));
         }
+    }
+
+    virtual bool IsOneColorChangePerSecond() override
+    {
+        return true;
     }
 };
 
@@ -86,7 +170,7 @@ class AnimatorGlow : public Animator
     int m_millis{0};
 
   public:
-    virtual void Go() override
+    virtual void DoColorChanges() override
     {
         int scaledColor = ScaleBrightness(ColorWheel(m_wheelColor), m_brightness);
         for (int i = 0; i < 6; ++i)
@@ -119,13 +203,9 @@ class AnimatorCycleFlowLeft : public Animator
     using Animator::Animator;
 
   public:
-    virtual void Go() override
+    virtual void DoColorChanges() override
     {
-        if (m_lastSecond != rtc_hal_second())
-        {
-            CycleDigitColors(false);
-            m_lastSecond = rtc_hal_second();
-        }
+        CycleDigitColors(false);
     }
 
     virtual void ColorButtonPressed(uint8_t wheelColor) override
@@ -133,12 +213,17 @@ class AnimatorCycleFlowLeft : public Animator
         CycleDigitColors(true);
     }
 
+    virtual bool IsOneColorChangePerSecond() override
+    {
+        return true;
+    }
+
   private:
     void CycleDigitColors(bool forceRotate = false)
     {
         SetWheelColor(m_wheelColor + 6);
         m_digits[5]->SetColor(ColorWheel(m_wheelColor));
-        if (m_digits[5]->GetNumDisplayed() == 9 || forceRotate)
+        if (m_currentNumbers[5] == 0 || forceRotate)
         {
             for (int i = 0; i < 5; ++i)
             {
@@ -159,7 +244,7 @@ class AnimatorRainbow : public Animator
     float m_colors[6] = {0, 12, 24, 36, 48, 60};
 
   public:
-    virtual void Go() override
+    virtual void DoColorChanges() override
     {
         if (m_paused)
         {
@@ -185,15 +270,17 @@ class AnimatorRainbow : public Animator
     }
 };
 
-class AnimatorSetTime : public Animator
+class AnimatorAltDisplay : public Animator
 {
     using Animator::Animator;
 
   public:
-    virtual void Go() override
+    virtual void DoColorChanges() override
     {
         for (int i = 0; i < 6; ++i)
         {
+            m_digits[i]->AllOff();
+            m_digits[i]->SetBrightness(1.0f);
             m_digits[i]->SetColor(ColorWheel(m_wheelColor + 128));
         }
     };
@@ -207,13 +294,13 @@ static inline std::shared_ptr<Animator> AnimatorFactory(DigitPtrs_t digits, cons
     case ANIM_GLOW:
         return std::make_shared<AnimatorGlow>(digits, wheelColor);
     case ANIM_CYCLE_COLORS:
-        return std::make_shared<AnimatorCycleAll>(digits, wheelColor);
+        return std::make_shared<AnimatorCycleColors>(digits, wheelColor);
     case ANIM_CYCLE_FLOW_LEFT:
         return std::make_shared<AnimatorCycleFlowLeft>(digits, wheelColor);
     case ANIM_RAINBOW:
         return std::make_shared<AnimatorRainbow>(digits, wheelColor);
-    case ANIM_SET_TIME:
-        return std::make_shared<AnimatorSetTime>(digits, wheelColor);
+    case ANIM_ALT_DISPLAY:
+        return std::make_shared<AnimatorAltDisplay>(digits, wheelColor);
     }
 
     return std::make_shared<Animator>(digits, wheelColor);

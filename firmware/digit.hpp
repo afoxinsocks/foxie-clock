@@ -9,6 +9,8 @@ enum DigitTypes_e
     DT_PIXELS = 2,
 };
 
+using Numbers_t = std::vector<uint8_t>; // must always be NUM_DIGITS size
+
 // returns a color transitioning from r -> g -> b and back to r
 // lightly modified from Adafruit NeoPixel strand test
 static inline uint32_t ColorWheel(uint8_t pos)
@@ -52,7 +54,6 @@ class Digit
     int m_first;
     int m_color;
     float m_brightness{1.0f};
-    int m_currentNumDisplayed{INVALID};
 
   public:
     Digit(Adafruit_NeoPixel &leds, const int firstLED, const int onColor)
@@ -90,11 +91,6 @@ class Digit
         m_brightness = brightness;
     }
 
-    int GetNumDisplayed()
-    {
-        return m_currentNumDisplayed;
-    }
-
     void SetPixel(const int pixelNum, const int color)
     {
         m_leds.setPixelColor(pixelNum, ScaleBrightness(color, m_brightness));
@@ -112,16 +108,16 @@ class EdgeLitDigit : public Digit
   public:
     virtual void Display(const int num)
     {
-        AllOff();
-
         if (num >= 0 && num <= 9)
         {
             const int row = 10 - num;
             SetPixel(m_first + (row * 2) - 2, m_color);
             SetPixel(m_first + (row * 2) - 1, m_color);
         }
-
-        m_currentNumDisplayed = num;
+        else
+        {
+            AllOff();
+        }
     }
 };
 
@@ -150,8 +146,6 @@ class DisplayDigit : public Digit
         {
             AllOff();
         }
-
-        m_currentNumDisplayed = num;
     }
 
   private:

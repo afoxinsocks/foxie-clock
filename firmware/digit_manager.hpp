@@ -6,8 +6,6 @@
 #include "digit.hpp"
 #include "settings.hpp"
 
-using Numbers_t = std::vector<uint8_t>; // must always be NUM_DIGITS size
-
 class DigitManager
 {
   private:
@@ -30,20 +28,12 @@ class DigitManager
     Adafruit_NeoPixel &m_leds;
     Settings &m_settings;
 
-    // these are the value of each physical number that can be displayed
-    // For a Foxie Clock, a "Digit" can only be 0-9.
-    Numbers_t m_numbers;
-
-    // shared pointers used so that destructing automatically deletes the digit
     DigitPtrs_t m_digits;
-
-    std::shared_ptr<Animator> m_animator;
+    AnimatorPtr_t m_animator;
 
   public:
     DigitManager(Adafruit_NeoPixel &leds, Settings &settings) : m_leds(leds), m_settings(settings)
     {
-        m_numbers.resize(NUM_DIGITS, 0);
-
         CreateDigits();
     }
 
@@ -68,14 +58,7 @@ class DigitManager
 
     void Display(const Numbers_t numbers)
     {
-        m_numbers = numbers;
-
-        m_animator->Go();
-
-        for (size_t i = 0; i < NUM_DIGITS; ++i)
-        {
-            m_digits[i]->Display(m_numbers[i]);
-        }
+        m_animator->Go(numbers);
     }
 
     void ColorButtonPressed(const uint8_t wheelColor)

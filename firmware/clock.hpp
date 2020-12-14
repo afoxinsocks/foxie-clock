@@ -76,7 +76,7 @@ class Clock
     {
         m_state = STATE_ALT_DISPLAY;
         m_timeInAltDisplayMode.Reset();
-        m_digitMgr.UseAnimation(ANIM_NONE);
+        m_digitMgr.UseAnimation(ANIM_ALT_DISPLAY);
 
         m_alternateNumbers.resize(NUM_DIGITS, Digit::INVALID);
 
@@ -168,7 +168,7 @@ class Clock
                 if (m_state == STATE_NORMAL)
                 {
                     m_state = STATE_SET_TIME;
-                    m_digitMgr.UseAnimation(ANIM_SET_TIME);
+                    m_digitMgr.UseAnimation(ANIM_ALT_DISPLAY);
                 }
                 else
                 {
