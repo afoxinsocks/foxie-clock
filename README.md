@@ -4,12 +4,12 @@
 
 Welcome to the Foxie Clock, a fully open-source RGB clock with nixie-like edge-lit acrylic digits. Or... an RGB pixel display clock, if you like!
 
-![Foxie Clock Image](images/clock_pro.png)
-![Foxie Clock Pixel Display](images/pixel_display.jpg)
+![Foxie Clock Image](images/foxie_clock.jpg)
+![Foxie Clock Pixel Display](images/pxl_clock.jpg)
 
 ## Looks
 
-With a look inspired by old nixie tubes and with capacitors protruding through the surface like vacuum tubes, the Foxie Clock is a fun, colorful way to display the time at your desk, office, or anywhere. Brightness, color, and time are all adjustable directly with 4 buttons on the back, with much more adjustability via an iOS/Android app using Bluetooth in the near future. [Using the clock is very easy](USAGE.md), with 4 buttons on the back providing various functionality for setting time, animation modes, colors, and brightness.
+With a look inspired by old nixie tubes and with capacitors protruding through the surface like vacuum tubes, the Foxie Clock is a fun, colorful way to display the time at your desk, office, or anywhere. Brightness, color, and time are all adjustable directly with 4 buttons on the back. [Using the clock is very easy](USAGE.md), with 4 buttons on the back providing various functionality for setting time, animation modes, colors, and brightness, 12/24h mode, PXL mode, and more.
 
 ![Foxie Clock Case Render Image2](images/case_render2.png)
 
@@ -26,9 +26,9 @@ All .STL models and the full Fusion360 project and the .step files are also avai
 
 The clock is [easy to assemble](ASSEMBLY.md) and looks beautiful when complete.
 
-![Foxie Clock Case Assembled](images/digits_step3.jpg)
+![Foxie Clock Case Assembled](images/digits_complete.jpg)
 
-The case is 3D printed and can be ordered with the kit, available in a few colors.
+The case is 3D printed and is included with the kit.
 
 ![Foxie Clock Case Assembly](images/assembly_step0.jpg)
 
