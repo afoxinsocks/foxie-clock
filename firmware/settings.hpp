@@ -43,6 +43,12 @@ class Settings
     Settings()
     {
         Load();
+
+        // This happens on a new board since the EEPROM has never been written.
+        if (Get(SETTING_DIGIT_TYPE) > 1)
+        {
+            Reset();
+        }
     }
 
     void Reset()
