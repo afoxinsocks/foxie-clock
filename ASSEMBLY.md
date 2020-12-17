@@ -11,78 +11,48 @@ cleaned with lens wipes. All kits include 2 nitrile gloves (non-powder, non-late
 
 You'll need the fully assembled Foxie Clock board, a 2mm hex wrench, a utility knife or Xacto knife, and finally, sharp tweezers are extremely helpful. 
 
-![Assembly tools](/images/assembly_tools.jpg)
-
 ## Step 1
 
-Set out the 6 sets of digits. Each stack contains the numerals 0-9. 
-Put on your gloves. Yes, this part is tedious, and it will take about an hour -- and you'll get faster with it as you go. Laser cutting acrylic without the protective paper is worse, trust me. 
-
-I recommend putting on some good music, or something to watch while you slog through this step.
-
-It's tempting to start putting digits into the lid right away as you remove the protective film from each one. Try not to, just keep them in ordered stacks.
+Set out the 6 sets of digits and put on the nitrile gloves gloves. This part is a little tedious but if you are careful, you can peel the film off each side as one piece, in less than a minute. Ideally, *do not* break the digits apart before this step.
 
 ![Lay out stacks of digits](/images/digits_step1.jpg)
 
 ## Step 2
 
-Pick up a digit, and get comfortable. I find that using a utilty or Xacto knife to lift the paper at the edge is pretty easy, and it doesn't tend to scratch the tab.  It is easiest to **carefully** scrape near the corner of one of the bottom tabs to get the protective paper to start peeling up. If you scratch the tab, it is OK! The tabs will be below the surface of the lid after assembly and the scratches will not be visible.
+Carefully peel back the film on the "rail" and then peel carefully along the rail to the other side. After that, peel toward the top of the digits.
 
-The protective paper on the 9 and 6 (and sometimes the 4) will usually come off in one piece. The 8 and 0 will require *very carefully* picking up the edge of the protective paper in those areas and peeling it off.  Use a fingernail to scrape the edge of the paper to lift a small amount, then use the tweezers to remove it.
-
-![](/images/digits_step2a.jpg)
-![](/images/digits_step2b.jpg)
-![](/images/digits_step2c.jpg)
-![](/images/digits_step2d.jpg)
-![](/images/digits_step2e.jpg)
+![](/images/digits_step2.jpg)
+![](/images/digits_step2.1.jpg)
+![](/images/digits_step2.2.jpg)
 
 ## Step 3
 
-Congratulations, you made it to step 3... hopefully still sane.
-
-Take your clock case with the electronics inside, lid on top, and insert the M3 bolts. Note that the lid will not fit correctly if it is upside down -- verify that you can see the LEDs through the holes on the lid.
-Don't overtighten the bolts -- if tightened too much, the lid will be pulled down past the rear edge of the case. If this happens, just loosen those bolts a bit to get the lid to be the same level as the back of the case.
+Peel the protective paper off the digit block supports, using the same method as with the digits -- start with the rail. 
 
 ![](/images/digits_step3.jpg)
 
 ## Step 4
 
-Insert a full row of digits, starting with the far right (6th row), making sure to keep the digits in the correct order of 0-9 (starting at the front of the row) or 9-0 (starting from the back).
+The notches and notch supports are a tight fit. Make sure to insert the notch supports as flat as possible, so that you do not *crack* the digits.
 
-![](/images/digits_step4a.jpg)
-![](/images/digits_step4b.jpg)
-![](/images/digits_step4c.jpg)
+It's easiest to carefully go along a set of digits, breaking them off the rail one by one to insert into the TOP (wide) notch support. After you have all 10 digits off the rail, then place one of the side supports in, then the other one. It will require some pressure to get the side (narrow) notch supports in all the way -- put the digits down on a table with the side notch support fitted partially (make sure it is not twisted!) into the notch, then press from the other side of the digits directly down toward the table.
 
-## Step 5
-
-Take the 3 digit separators, inspect them for any loose strings (remove any using the tweezers). Insert one of the digit separators at the base of the row you just completed, and push it tightly into the digits. The separators should have a fairly tight fit and are intended to keep the digits standing as vertically as possible.
-
-**Note:** The digits may not stand completely straight yet -- once the next row of digits is inserted, doing so will cause the "teeth" on this row to tighten up and force the digits to be more straight. 
-
-![](/images/digits_step5a.jpg)
-![](/images/digits_step5b.jpg)
-![](/images/digits_step5c.jpg)
-
-After the digit separator is completely inserted, go ahead and put in the 5th row of digits, again making sure to keep them in the correct order. As you're inserting the digits in this row on the other side of the separator, be careful to push the digits straight down through the "teeth." It should be fairly tight.
-
-## Step 6
-
-Repeat the same steps for the rest of the rows, placing a digit separator again after the 4th row before the 3rd, then after the 2nd row before the 1st.
-As more and more digits are in the lid, it may be difficult to see into which holes you're inserting the tabs. Try looking straight down from above the acrylic digit as you're inserting, or turn the clock around.
-
-![](/images/digits_step6a.jpg)
-![](/images/digits_step6b.jpg)
-![](/images/digits_step6c.jpg)
-![](/images/digits_step6d.jpg)
-
-## Step 7
-
-You're nearly done! Carefully straighten out the rows of digits, making sure they are completely inserted into the lid and are straight.
-
-![](/images/digits_step7.jpg)
+![](/images/digits_step4.jpg)
+![](/images/digits_step4.1.jpg)
+![](/images/digits_step4.2.jpg)
+![](/images/digits_step4.3.jpg)
+![](/images/digits_step4.4.jpg)
+![](/images/digits_step4.5.jpg)
+![](/images/digits_step4.6.jpg)
+![](/images/digits_step4.7.jpg)
+![](/images/digits_step4.8.jpg)
+![](/images/digits_step4.9.jpg)
+![](/images/digits_step4.10.jpg)
 
 # Congratulations!
 
 If you haven't already powered up the clock, find a USB-C cable and try it now. [Installing the latest firmware is straight-forward](INSTALLING.md). 
 
 Finally, [set the time, colors, and brightness](USAGE.md).
+
+![](/images/digits_complete.jpg)
