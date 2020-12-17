@@ -209,12 +209,20 @@ class Clock
                     m_btnHour.SetEnabled(true);
                     m_btnMinute.SetEnabled(true);
                     m_btnAnimationMode.SetEnabled(false);
+                    m_btnToggleDisplay.SetEnabled(false);
+                    m_btnToggleBlinkers.SetEnabled(false);
+                    m_btnToggle24HMode.SetEnabled(false);
+                    m_btnFlipDisplay.SetEnabled(false);
                 }
                 else
                 {
                     m_btnHour.SetEnabled(false);
                     m_btnMinute.SetEnabled(false);
                     m_btnAnimationMode.SetEnabled(true);
+                    m_btnToggleDisplay.SetEnabled(true);
+                    m_btnToggleBlinkers.SetEnabled(true);
+                    m_btnToggle24HMode.SetEnabled(true);
+                    m_btnFlipDisplay.SetEnabled(true);
                 }
             }
         };
@@ -275,10 +283,18 @@ class Clock
         m_btnToggle24HMode.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
             {
+                m_btnSetTime.SetEnabled(false);
+                m_btnAnimationMode.SetEnabled(false);
+
                 const auto mode = m_settings.Get(SETTING_24_HOUR_MODE);
                 m_settings.Set(SETTING_24_HOUR_MODE, mode == 0 ? 1 : 0);
                 m_settings.Save();
                 m_digitMgr.CreateDigits();
+            }
+            else if (evt == Button::RELEASE)
+            {
+                m_btnSetTime.SetEnabled(true);
+                m_btnAnimationMode.SetEnabled(true);
             }
         };
 
@@ -310,9 +326,17 @@ class Clock
         m_btnToggleBlinkers.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
             {
+                m_btnBrightness.SetEnabled(false);
+                m_btnAnimationMode.SetEnabled(false);
+
                 const auto mode = m_settings.Get(SETTING_BLINKING_SEPARATORS);
                 m_settings.Set(SETTING_BLINKING_SEPARATORS, mode == 0 ? 1 : 0);
                 m_settings.Save();
+            }
+            else if (evt == Button::RELEASE)
+            {
+                m_btnBrightness.SetEnabled(true);
+                m_btnAnimationMode.SetEnabled(true);
             }
         };
 
@@ -347,11 +371,18 @@ class Clock
         m_btnFlipDisplay.config.handlerFunc = [&](const Button::Event_e evt) {
             if (evt == Button::PRESS)
             {
+                m_btnColor.SetEnabled(false);
+                m_btnBrightness.SetEnabled(false);
+
                 const auto flip = m_settings.Get(SETTING_FLIP_DISPLAY);
                 m_settings.Set(SETTING_FLIP_DISPLAY, flip == 0 ? 1 : 0);
-
                 m_settings.Save();
                 m_digitMgr.CreateDigits();
+            }
+            else if (evt == Button::RELEASE)
+            {
+                m_btnColor.SetEnabled(true);
+                m_btnBrightness.SetEnabled(true);
             }
         };
     }
