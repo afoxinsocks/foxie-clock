@@ -291,6 +291,7 @@ class Clock
                 m_settings.Set(SETTING_24_HOUR_MODE, mode == 0 ? 1 : 0);
                 m_settings.Save();
                 m_digitMgr.CreateDigits();
+                DisplayTemporarily(m_settings.Get(SETTING_24_HOUR_MODE) == 1 ? 24 : 12);
             }
             else if (evt == Button::RELEASE)
             {
