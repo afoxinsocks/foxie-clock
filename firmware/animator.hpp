@@ -28,6 +28,7 @@ class Animator
     DigitPtrs_t m_digits;
     uint8_t m_wheelColor;
     bool m_isOncePerSecond{false};
+    bool m_isFirstTime{true};
     Numbers_t m_lastNumbers;
     Numbers_t m_currentNumbers;
     ElapsedTime m_timeSinceSecondBegan;
@@ -63,24 +64,15 @@ class Animator
     {
         m_currentNumbers = numbers;
 
-        // this is to catch the case when we've stopped receiving updates from the RTC while we're in Set Time mode. If
-        // we pass some a sufficient value above 1000, we can be pretty sure rtc_hal_second() is malfunctioning. TODO: I
-        // should move this into rtc_hal_millis()
-        bool oneSecondHasPassed = (m_timeSinceSecondBegan.Ms() > 1057);
-
-        if (rtc_hal_second() != m_lastSecond || oneSecondHasPassed)
-        {
-            m_timeSinceSecondBegan.Reset();
-            m_lastSecond = rtc_hal_second();
-            DoOncePerSecond();
-        }
+        const bool rollover = HasSecondRolledOver();
 
         DoColorChanges();
         DoBrightnessAndDisplay();
 
-        if (!IsTransitioning() || oneSecondHasPassed)
+        if (!IsTransitioning() || m_isFirstTime)
         {
             m_lastNumbers = numbers;
+            m_isFirstTime = false;
         }
     };
 
@@ -145,7 +137,24 @@ class Animator
     }
 
   private:
-    virtual bool IsTransitioning()
+    bool HasSecondRolledOver()
+    {
+        // this is to catch the case when we've stopped receiving updates from
+        // the RTC while we're in Set Time mode. if we pass sufficiently
+        // above 1000ms, we can be sure rtc_hal_second() is not functioning
+        // currently.
+        const bool oneSecondHasPassed = (m_timeSinceSecondBegan.Ms() > 1057);
+        if (rtc_hal_second() != m_lastSecond || oneSecondHasPassed)
+        {
+            m_timeSinceSecondBegan.Reset();
+            m_lastSecond = rtc_hal_second();
+            DoOncePerSecond();
+            return true;
+        }
+        return false;
+    }
+
+    bool IsTransitioning()
     {
         return m_timeSinceSecondBegan.Ms() < TRANSITION_TIME;
     }
@@ -310,13 +319,13 @@ class AnimatorZippy : public Animator
     {
         const float ms = m_timeSinceSecondBegan.Ms();
 
-        bool onceEvery10Seconds = rtc_hal_second() == 00 /* octal zero for funsies */;
+        bool isBeginningOfMinute = rtc_hal_second() == 00; // octal zero for funsies
         float zippyTime = ZIPPY_TIME;
 
         bool isZippy = ms < zippyTime;
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            if (m_lastNumbers[i] != m_currentNumbers[i] && isZippy || onceEvery10Seconds && isZippy)
+            if (m_lastNumbers[i] != m_currentNumbers[i] && isZippy || isBeginningOfMinute && isZippy)
             {
                 int zippy = m_lastNumbers[i];
                 zippy += (ms / zippyTime) * 10;
