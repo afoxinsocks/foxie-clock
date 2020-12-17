@@ -25,12 +25,8 @@ class Animator
   protected:
     int m_lastSecond{0};
     Settings &m_settings;
-    DigitPtrs_t m_digits;
+    DigitValues &m_values;
     uint8_t m_wheelColor;
-    bool m_isOncePerSecond{false};
-    bool m_isFirstTime{true};
-    Numbers_t m_lastNumbers;
-    Numbers_t m_currentNumbers;
     ElapsedTime m_timeSinceSecondBegan;
 
   public:
@@ -41,7 +37,8 @@ class Animator
         TRANSITION_TIME = 400,
     };
 
-    Animator(Settings &settings, DigitPtrs_t digits, const uint8_t wheelColor) : m_settings(settings), m_digits(digits)
+    Animator(Settings &settings, DigitValues &digitValues, const uint8_t wheelColor)
+        : m_settings(settings), m_values(digitValues)
     {
         m_wheelColor = wheelColor;
         m_lastSecond = rtc_hal_second();
@@ -49,11 +46,8 @@ class Animator
 
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            m_digits[i]->AllOff();
+            m_values.digits[i]->AllOff();
         }
-
-        m_lastNumbers = {Digit::INVALID, Digit::INVALID, Digit::INVALID,
-                         Digit::INVALID, Digit::INVALID, Digit::INVALID};
     }
 
     virtual ~Animator()
@@ -62,18 +56,10 @@ class Animator
 
     void Go(const Numbers_t &numbers)
     {
-        m_currentNumbers = numbers;
-
-        const bool rollover = HasSecondRolledOver();
+        CheckForSecondRollover();
 
         DoColorChanges();
         DoBrightnessAndDisplay();
-
-        if (!IsTransitioning() || m_isFirstTime)
-        {
-            m_lastNumbers = numbers;
-            m_isFirstTime = false;
-        }
     };
 
     virtual void SetWheelColor(const uint8_t wheelColor)
@@ -95,7 +81,7 @@ class Animator
         const int color = ColorWheel(m_wheelColor);
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            m_digits[i]->SetColor(color);
+            m_values.digits[i]->SetColor(color);
         }
     }
 
@@ -108,36 +94,36 @@ class Animator
         const bool isTransitioning = IsTransitioning();
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            if (m_lastNumbers[i] != m_currentNumbers[i] && isTransitioning)
+            if (m_values.lastNumbers[i] != m_values.numbers[i] && isTransitioning)
             {
                 float progress = TransitionProgress();
 
                 // display previous number at diminishing brightness
-                m_digits[i]->SetBrightness(1.0f - progress);
-                m_digits[i]->Display(m_lastNumbers[i]);
+                m_values.digits[i]->SetBrightness(1.0f - progress);
+                m_values.digits[i]->Display(m_values.lastNumbers[i]);
 
                 // display new number at increasing brightness, except
                 // in PXL mode where it doesn't look good to fade in
                 if (m_settings.Get(SETTING_DIGIT_TYPE) == DT_EDGE_LIT)
                 {
-                    m_digits[i]->SetBrightness(progress);
+                    m_values.digits[i]->SetBrightness(progress);
                 }
                 else
                 {
-                    m_digits[i]->SetBrightness(1.0f);
+                    m_values.digits[i]->SetBrightness(1.0f);
                 }
             }
             else
             {
-                m_digits[i]->Display(Digit::INVALID);
-                m_digits[i]->SetBrightness(1.0f);
+                m_values.digits[i]->Display(Digit::INVALID);
+                m_values.digits[i]->SetBrightness(1.0f);
             }
-            m_digits[i]->Display(m_currentNumbers[i]);
+            m_values.digits[i]->Display(m_values.numbers[i]);
         }
     }
 
   private:
-    bool HasSecondRolledOver()
+    void CheckForSecondRollover()
     {
         // this is to catch the case when we've stopped receiving updates from
         // the RTC while we're in Set Time mode. if we pass sufficiently
@@ -149,9 +135,7 @@ class Animator
             m_timeSinceSecondBegan.Reset();
             m_lastSecond = rtc_hal_second();
             DoOncePerSecond();
-            return true;
         }
-        return false;
     }
 
     bool IsTransitioning()
@@ -181,7 +165,7 @@ class AnimatorCycleColors : public Animator
         {
 
             m_wheelColor += 16;
-            m_digits[i]->SetColor(ColorWheel(m_wheelColor));
+            m_values.digits[i]->SetColor(ColorWheel(m_wheelColor));
         }
     }
 };
@@ -200,7 +184,7 @@ class AnimatorGlow : public Animator
         int scaledColor = ScaleBrightness(ColorWheel(m_wheelColor), m_brightness);
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            m_digits[i]->SetColor(scaledColor);
+            m_values.digits[i]->SetColor(scaledColor);
         }
 
         if ((int)millis() - m_millis >= 25)
@@ -246,14 +230,14 @@ class AnimatorCycleFlowLeft : public Animator
     void CycleDigitColors(bool forceRotate = false)
     {
         SetWheelColor(m_wheelColor + 6);
-        m_digits[5]->SetColor(ColorWheel(m_wheelColor));
-        if (m_currentNumbers[5] == 0 || forceRotate)
+        m_values.digits[5]->SetColor(ColorWheel(m_wheelColor));
+        if (m_values.numbers[5] == 0 || forceRotate)
         {
             for (int i = 0; i < 5; ++i)
             {
                 // get the color of the digit to the right
-                int newColor = m_digits[i + 1]->GetColor();
-                m_digits[i]->SetColor(newColor);
+                int newColor = m_values.digits[i + 1]->GetColor();
+                m_values.digits[i]->SetColor(newColor);
             }
         }
     }
@@ -284,7 +268,7 @@ class AnimatorRainbow : public Animator
                 m_colors[i] -= 255.0f;
             }
 
-            m_digits[i]->SetColor(ColorWheel(m_colors[i]));
+            m_values.digits[i]->SetColor(ColorWheel(m_colors[i]));
         }
     }
 
@@ -311,7 +295,7 @@ class AnimatorZippy : public Animator
     {
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            m_digits[i]->SetColor(ColorWheel(m_wheelColor));
+            m_values.digits[i]->SetColor(ColorWheel(m_wheelColor));
         }
     }
 
@@ -325,9 +309,9 @@ class AnimatorZippy : public Animator
         bool isZippy = ms < zippyTime;
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            if (m_lastNumbers[i] != m_currentNumbers[i] && isZippy || isBeginningOfMinute && isZippy)
+            if (m_values.lastNumbers[i] != m_values.numbers[i] && isZippy || isBeginningOfMinute && isZippy)
             {
-                int zippy = m_lastNumbers[i];
+                int zippy = m_values.lastNumbers[i];
                 zippy += (ms / zippyTime) * 10;
 
                 if (zippy > 9)
@@ -335,13 +319,13 @@ class AnimatorZippy : public Animator
                     zippy -= 10;
                 }
 
-                m_digits[i]->AllOff();
-                m_digits[i]->Display(zippy);
+                m_values.digits[i]->AllOff();
+                m_values.digits[i]->Display(zippy);
             }
             else
             {
-                m_digits[i]->AllOff();
-                m_digits[i]->Display(m_currentNumbers[i]);
+                m_values.digits[i]->AllOff();
+                m_values.digits[i]->Display(m_values.numbers[i]);
             }
         }
     }
@@ -356,10 +340,10 @@ class AnimatorAltDisplay : public Animator
     {
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            m_digits[i]->AllOff();
-            m_digits[i]->SetBrightness(1.0f);
-            m_digits[i]->SetColor(ColorWheel(m_wheelColor + 128));
-            m_digits[i]->Display(m_currentNumbers[i]);
+            m_values.digits[i]->AllOff();
+            m_values.digits[i]->SetBrightness(1.0f);
+            m_values.digits[i]->SetColor(ColorWheel(m_wheelColor + 128));
+            m_values.digits[i]->Display(m_values.numbers[i]);
         }
     };
 };
@@ -373,48 +357,48 @@ class AnimatorSetTime : public Animator
     {
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            m_digits[i]->AllOff();
+            m_values.digits[i]->AllOff();
 
-            m_digits[i]->SetBrightness(1.0f);
+            m_values.digits[i]->SetBrightness(1.0f);
             if (i < DIGIT_5)
             {
                 if (m_timeSinceSecondBegan.Ms() > 500)
                 {
-                    m_digits[i]->SetBrightness(0.8f);
+                    m_values.digits[i]->SetBrightness(0.8f);
                 }
 
-                m_digits[i]->SetColor(ColorWheel(m_wheelColor + 128));
+                m_values.digits[i]->SetColor(ColorWheel(m_wheelColor + 128));
             }
             else
             {
-                m_digits[i]->SetColor(ColorWheel(m_wheelColor));
+                m_values.digits[i]->SetColor(ColorWheel(m_wheelColor));
             }
 
-            m_digits[i]->Display(m_currentNumbers[i]);
+            m_values.digits[i]->Display(m_values.numbers[i]);
         }
     };
 };
 
-static inline std::shared_ptr<Animator> AnimatorFactory(Settings &settings, DigitPtrs_t digits,
+static inline std::shared_ptr<Animator> AnimatorFactory(Settings &settings, DigitValues &digitValues,
                                                         const AnimationType_e type, uint8_t wheelColor)
 {
     switch (type)
     {
     case ANIM_GLOW:
-        return std::make_shared<AnimatorGlow>(settings, digits, wheelColor);
+        return std::make_shared<AnimatorGlow>(settings, digitValues, wheelColor);
     case ANIM_CYCLE_COLORS:
-        return std::make_shared<AnimatorCycleColors>(settings, digits, wheelColor);
+        return std::make_shared<AnimatorCycleColors>(settings, digitValues, wheelColor);
     case ANIM_CYCLE_FLOW_LEFT:
-        return std::make_shared<AnimatorCycleFlowLeft>(settings, digits, wheelColor);
+        return std::make_shared<AnimatorCycleFlowLeft>(settings, digitValues, wheelColor);
     case ANIM_RAINBOW:
-        return std::make_shared<AnimatorRainbow>(settings, digits, wheelColor);
+        return std::make_shared<AnimatorRainbow>(settings, digitValues, wheelColor);
     case ANIM_ZIPPY:
-        return std::make_shared<AnimatorZippy>(settings, digits, wheelColor);
+        return std::make_shared<AnimatorZippy>(settings, digitValues, wheelColor);
     case ANIM_ALT_DISPLAY:
-        return std::make_shared<AnimatorAltDisplay>(settings, digits, wheelColor);
+        return std::make_shared<AnimatorAltDisplay>(settings, digitValues, wheelColor);
     case ANIM_SET_TIME:
-        return std::make_shared<AnimatorSetTime>(settings, digits, wheelColor);
+        return std::make_shared<AnimatorSetTime>(settings, digitValues, wheelColor);
     }
 
-    return std::make_shared<Animator>(settings, digits, wheelColor);
+    return std::make_shared<Animator>(settings, digitValues, wheelColor);
 }

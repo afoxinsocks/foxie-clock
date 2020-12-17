@@ -19,8 +19,6 @@ enum Digits_e
     DIGIT_6,
 };
 
-using Numbers_t = std::vector<uint8_t>; // must always be NUM_DIGITS size
-
 // returns a color transitioning from r -> g -> b and back to r
 // lightly modified from Adafruit NeoPixel strand test
 static inline uint32_t ColorWheel(uint8_t pos)
@@ -106,8 +104,6 @@ class Digit
         m_leds.setPixelColor(pixelNum, ScaleBrightness(color, m_brightness));
     }
 };
-using DigitPtr_t = std::shared_ptr<Digit>;
-using DigitPtrs_t = std::vector<DigitPtr_t>;
 
 // lights two LEDs at a time under each numeral
 class EdgeLitDigit : public Digit
@@ -282,4 +278,24 @@ class PXLDigit : public Digit
 
         // clang-format on
     };
+};
+
+using DigitPtr_t = std::shared_ptr<Digit>;
+using DigitPtrs_t = std::vector<DigitPtr_t>;
+using Numbers_t = std::vector<uint8_t>; // must always be NUM_DIGITS size
+
+struct DigitValues
+{
+    DigitPtrs_t digits;
+    Numbers_t numbers;
+    Numbers_t lastNumbers;
+
+    void Set(Numbers_t newNumbers)
+    {
+        if (newNumbers != numbers)
+        {
+            lastNumbers = numbers;
+            numbers = newNumbers;
+        }
+    }
 };

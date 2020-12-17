@@ -30,6 +30,7 @@ class DigitManager
 
     DigitPtrs_t m_digits;
     AnimatorPtr_t m_animator;
+    DigitValues m_values;
 
   public:
     DigitManager(Adafruit_NeoPixel &leds, Settings &settings) : m_leds(leds), m_settings(settings)
@@ -39,25 +40,26 @@ class DigitManager
 
     void CreateDigits()
     {
-        m_digits.clear();
+        m_values.digits.clear();
 
-        m_digits.push_back(CreateDigit(DIGIT_1_LED));
-        m_digits.push_back(CreateDigit(DIGIT_2_LED));
-        m_digits.push_back(CreateDigit(DIGIT_3_LED));
-        m_digits.push_back(CreateDigit(DIGIT_4_LED));
-        m_digits.push_back(CreateDigit(DIGIT_5_LED));
-        m_digits.push_back(CreateDigit(DIGIT_6_LED));
+        m_values.digits.push_back(CreateDigit(DIGIT_1_LED));
+        m_values.digits.push_back(CreateDigit(DIGIT_2_LED));
+        m_values.digits.push_back(CreateDigit(DIGIT_3_LED));
+        m_values.digits.push_back(CreateDigit(DIGIT_4_LED));
+        m_values.digits.push_back(CreateDigit(DIGIT_5_LED));
+        m_values.digits.push_back(CreateDigit(DIGIT_6_LED));
 
         UseAnimation((AnimationType_e)m_settings.Get(SETTING_ANIMATION_TYPE));
     }
 
     void UseAnimation(const AnimationType_e type)
     {
-        m_animator = AnimatorFactory(m_settings, m_digits, type, m_settings.Get(SETTING_COLOR));
+        m_animator = AnimatorFactory(m_settings, m_values, type, m_settings.Get(SETTING_COLOR));
     }
 
     void Display(const Numbers_t numbers)
     {
+        m_values.Set(numbers);
         m_animator->Go(numbers);
     }
 
