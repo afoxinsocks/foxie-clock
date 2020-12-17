@@ -310,7 +310,7 @@ class AnimatorZippy : public Animator
     {
         const float ms = m_timeSinceSecondBegan.Ms();
 
-        bool onceEvery10Seconds = m_currentNumbers[5] == 0;
+        bool onceEvery10Seconds = rtc_hal_second() == 00 /* octal zero for funsies */;
         float zippyTime = ZIPPY_TIME;
 
         bool isZippy = ms < zippyTime;
