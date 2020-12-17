@@ -55,6 +55,7 @@ class Clock
         m_btnHour.SetEnabled(false);
         m_btnMinute.SetEnabled(false);
         m_btnMinute.config.canRepeat = true;
+        m_btnMinute.config.repeatRate = 50;
         m_btnColor.config.canRepeat = true;
         m_btnColor.config.repeatRate = 200;
         m_btnBrightness.config.canRepeat = true;
