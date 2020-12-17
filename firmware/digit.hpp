@@ -9,6 +9,16 @@ enum DigitTypes_e
     DT_PIXELS = 2,
 };
 
+enum Digits_e
+{
+    DIGIT_1,
+    DIGIT_2,
+    DIGIT_3,
+    DIGIT_4,
+    DIGIT_5,
+    DIGIT_6,
+};
+
 using Numbers_t = std::vector<uint8_t>; // must always be NUM_DIGITS size
 
 // returns a color transitioning from r -> g -> b and back to r

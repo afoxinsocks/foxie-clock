@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "digit.hpp"
+#include "elapsed_time.hpp"
 #include "rtc_hal.hpp"
 #include "settings.hpp"
 
@@ -14,23 +15,22 @@ enum AnimationType_e
     ANIM_CYCLE_FLOW_LEFT,
     ANIM_RAINBOW,
 
-    // Add new types above here
-    ANIM_TOTAL,
+    ANIM_USER_ACCESSIBLE_TOTAL,
     ANIM_ALT_DISPLAY,
+    ANIM_SET_TIME,
 };
 
 class Animator
 {
-  private:
-    int m_lastSecond;
-
   protected:
+    int m_lastSecond{0};
     Settings &m_settings;
     DigitPtrs_t m_digits;
     uint8_t m_wheelColor;
     bool m_isOncePerSecond{false};
     Numbers_t m_lastNumbers;
     Numbers_t m_currentNumbers;
+    ElapsedTime m_timeSinceSecondBegan;
 
   public:
     enum Configuration_e
@@ -44,6 +44,7 @@ class Animator
     {
         m_wheelColor = wheelColor;
         m_lastSecond = rtc_hal_second();
+        m_timeSinceSecondBegan.Set(rtc_hal_millis());
 
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
@@ -62,15 +63,22 @@ class Animator
     {
         m_currentNumbers = numbers;
 
-        DoBrightnessAndDisplay();
+        // this is to catch the case when we've stopped receiving updates from the RTC while we're in Set Time mode. If
+        // we pass some a sufficient value above 1000, we can be pretty sure rtc_hal_second() is malfunctioning. TODO: I
+        // should move this into rtc_hal_millis()
+        bool oneSecondHasPassed = (m_timeSinceSecondBegan.Ms() > 1057);
 
-        if (!IsOneColorChangePerSecond() || m_lastSecond != rtc_hal_second())
+        if (rtc_hal_second() != m_lastSecond || oneSecondHasPassed)
         {
-            DoColorChanges();
+            m_timeSinceSecondBegan.Reset();
             m_lastSecond = rtc_hal_second();
+            DoOncePerSecond();
         }
 
-        if (!IsTransitioning())
+        DoColorChanges();
+        DoBrightnessAndDisplay();
+
+        if (!IsTransitioning() || oneSecondHasPassed)
         {
             m_lastNumbers = numbers;
         }
@@ -88,11 +96,6 @@ class Animator
         SetWheelColor(wheelColor);
     }
 
-    virtual bool IsOneColorChangePerSecond()
-    {
-        return false;
-    }
-
   protected:
     // subclasses can do different things if they override these functions
     virtual void DoColorChanges()
@@ -102,6 +105,10 @@ class Animator
         {
             m_digits[i]->SetColor(color);
         }
+    }
+
+    virtual void DoOncePerSecond()
+    {
     }
 
     virtual void DoBrightnessAndDisplay()
@@ -140,12 +147,12 @@ class Animator
   private:
     virtual bool IsTransitioning()
     {
-        return rtc_hal_millis() < TRANSITION_TIME;
+        return m_timeSinceSecondBegan.Ms() < TRANSITION_TIME;
     }
 
     float TransitionProgress()
     {
-        return (float)rtc_hal_millis() / TRANSITION_TIME;
+        return (float)m_timeSinceSecondBegan.Ms() / TRANSITION_TIME;
     }
 };
 using AnimatorPtr_t = std::shared_ptr<Animator>;
@@ -154,8 +161,12 @@ class AnimatorCycleColors : public Animator
 {
     using Animator::Animator;
 
-  public:
-    virtual void DoColorChanges() override
+  protected:
+    virtual void DoColorChanges()
+    {
+    }
+
+    virtual void DoOncePerSecond() override
     {
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
@@ -163,11 +174,6 @@ class AnimatorCycleColors : public Animator
             m_wheelColor += 16;
             m_digits[i]->SetColor(ColorWheel(m_wheelColor));
         }
-    }
-
-    virtual bool IsOneColorChangePerSecond() override
-    {
-        return true;
     }
 };
 
@@ -213,7 +219,7 @@ class AnimatorCycleFlowLeft : public Animator
     using Animator::Animator;
 
   public:
-    virtual void DoColorChanges() override
+    virtual void DoOncePerSecond() override
     {
         CycleDigitColors(false);
     }
@@ -223,9 +229,8 @@ class AnimatorCycleFlowLeft : public Animator
         CycleDigitColors(true);
     }
 
-    virtual bool IsOneColorChangePerSecond() override
+    virtual void DoColorChanges()
     {
-        return true;
     }
 
   private:
@@ -283,6 +288,13 @@ class AnimatorRainbow : public Animator
 class AnimatorZippy : public Animator
 {
     using Animator::Animator;
+
+  private:
+    enum
+    {
+        ZIPPY_TIME = 250,
+    };
+
     float m_zippy{0};
 
   public:
@@ -296,15 +308,18 @@ class AnimatorZippy : public Animator
 
     virtual void DoBrightnessAndDisplay()
     {
-        const float ms = rtc_hal_millis();
-        const bool isTransitioning = rtc_hal_millis() < 300;
+        const float ms = m_timeSinceSecondBegan.Ms();
 
+        bool onceEvery10Seconds = m_currentNumbers[5] == 0;
+        float zippyTime = ZIPPY_TIME;
+
+        bool isZippy = ms < zippyTime;
         for (int i = 0; i < NUM_DIGITS; ++i)
         {
-            if (m_lastNumbers[i] != m_currentNumbers[i] && isTransitioning)
+            if (m_lastNumbers[i] != m_currentNumbers[i] && isZippy || onceEvery10Seconds && isZippy)
             {
-                float zippy = m_lastNumbers[i];
-                zippy += (ms / 300.0f) * 10.0f;
+                int zippy = m_lastNumbers[i];
+                zippy += (ms / zippyTime) * 10;
 
                 if (zippy > 9)
                 {
@@ -340,6 +355,37 @@ class AnimatorAltDisplay : public Animator
     };
 };
 
+class AnimatorSetTime : public Animator
+{
+    using Animator::Animator;
+
+  public:
+    virtual void DoBrightnessAndDisplay() override
+    {
+        for (int i = 0; i < NUM_DIGITS; ++i)
+        {
+            m_digits[i]->AllOff();
+
+            m_digits[i]->SetBrightness(1.0f);
+            if (i < DIGIT_5)
+            {
+                if (m_timeSinceSecondBegan.Ms() > 500)
+                {
+                    m_digits[i]->SetBrightness(0.8f);
+                }
+
+                m_digits[i]->SetColor(ColorWheel(m_wheelColor + 128));
+            }
+            else
+            {
+                m_digits[i]->SetColor(ColorWheel(m_wheelColor));
+            }
+
+            m_digits[i]->Display(m_currentNumbers[i]);
+        }
+    };
+};
+
 static inline std::shared_ptr<Animator> AnimatorFactory(Settings &settings, DigitPtrs_t digits,
                                                         const AnimationType_e type, uint8_t wheelColor)
 {
@@ -357,6 +403,8 @@ static inline std::shared_ptr<Animator> AnimatorFactory(Settings &settings, Digi
         return std::make_shared<AnimatorZippy>(settings, digits, wheelColor);
     case ANIM_ALT_DISPLAY:
         return std::make_shared<AnimatorAltDisplay>(settings, digits, wheelColor);
+    case ANIM_SET_TIME:
+        return std::make_shared<AnimatorSetTime>(settings, digits, wheelColor);
     }
 
     return std::make_shared<Animator>(settings, digits, wheelColor);

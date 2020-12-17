@@ -193,7 +193,7 @@ class Clock
                 if (m_state == STATE_NORMAL)
                 {
                     m_state = STATE_SET_TIME;
-                    m_digitMgr.UseAnimation(ANIM_ALT_DISPLAY);
+                    m_digitMgr.UseAnimation(ANIM_SET_TIME);
                 }
                 else
                 {
@@ -243,7 +243,7 @@ class Clock
             if (evt == Button::RELEASE)
             {
                 m_settings.Set(SETTING_ANIMATION_TYPE, m_settings.Get(SETTING_ANIMATION_TYPE) + 1);
-                if (m_settings.Get(SETTING_ANIMATION_TYPE) >= ANIM_TOTAL)
+                if (m_settings.Get(SETTING_ANIMATION_TYPE) >= ANIM_USER_ACCESSIBLE_TOTAL)
                 {
                     m_settings.Set(SETTING_ANIMATION_TYPE, ANIM_NONE);
                 }

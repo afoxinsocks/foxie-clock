@@ -11,6 +11,11 @@ class ElapsedTime
         Reset();
     }
 
+    void Set(const int millis)
+    {
+        m_millis = millis;
+    }
+
     void Reset()
     {
         m_millis = millis();
